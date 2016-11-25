@@ -11,6 +11,17 @@
 
 @implementation RFISigner
 
++ (NSString *) escapeString: (NSString *) escString {
+    
+    //При наличии в строке переменной JSON, надо дополнительно экранировать спецсимволы
+    escString = [escString stringByReplacingOccurrencesOfString:@"/" withString:@"%2F"];
+    escString = [escString stringByReplacingOccurrencesOfString:@"+" withString:@"%2B"];
+    escString = [escString stringByReplacingOccurrencesOfString:@"=" withString:@"%3D"];
+    escString = [escString stringByReplacingOccurrencesOfString:@"," withString:@"%2C"];
+    
+    return escString;
+}
+
 + (NSString *) sign: (NSString *)method url: (NSString *)url requestParams: (NSDictionary *)requestParams secretKey: (NSString *) secretKey {
     
     // Сортировка словаря по ключу
@@ -30,12 +41,20 @@
         // HTML Encoding  (iOS7 and above)
         NSString * escapedString = [object stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLHostAllowedCharacterSet]];
         
+        escapedString = [self escapeString:escapedString];
+        
         urlParametrs = [urlParametrs stringByAppendingFormat: @"%@=%@", key, escapedString];
     }
+    
+//    NSLog(@"urlParametrs: %@",urlParametrs);
 
     // Получение строки для хеширования
+    
+    
     NSString * data = [method uppercaseString];
     data = [data stringByAppendingFormat: @"%@%@%@%@%@%@", @"\n", [uri host], @"\n", [uri path], @"\n", urlParametrs];
+    
+//    NSLog(@"DATA: %@",data);
     
     // hmac 256
     const char *cKey = [secretKey cStringUsingEncoding:NSUTF8StringEncoding];
@@ -55,4 +74,7 @@
     return base64String;
     
 }
+
+
+
 @end
