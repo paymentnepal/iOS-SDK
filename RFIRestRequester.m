@@ -46,6 +46,8 @@
         
         NSString * escapedString = [object stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLHostAllowedCharacterSet]];
         
+        escapedString = [RFISigner escapeString:escapedString];
+        
         urlParametrs = [urlParametrs stringByAppendingFormat: @"%@=%@", key, escapedString];
         
     }

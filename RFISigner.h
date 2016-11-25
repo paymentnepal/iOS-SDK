@@ -8,16 +8,10 @@
 
 #import <Foundation/Foundation.h>
 
-@interface RFISigner : NSObject //{
-//    NSString * _url;
-//    NSString * _method;
-//}
-//
-//
-//@property (nonatomic, copy) NSString * url;
-//@property (nonatomic, copy) NSString * method;
+@interface RFISigner : NSObject
 
 + (NSString *) sign: (NSString *)method url: (NSString *)url requestParams: (NSDictionary *)requestParams secretKey: (NSString *) secretKey;
 
++ (NSString *) escapeString: (NSString *) escString;
 
 @end
