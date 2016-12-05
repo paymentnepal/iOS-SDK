@@ -58,7 +58,7 @@
 // Иницировать платеж
 //
 
-- (id) initPayment: (RFIPaymentRequest *)paymentRequest {
+- (id) paymentInit: (RFIPaymentRequest *)paymentRequest {
     
     
     NSMutableDictionary * requestMutableParams = [[NSMutableDictionary alloc] initWithObjectsAndKeys:
