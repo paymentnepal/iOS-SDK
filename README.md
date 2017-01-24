@@ -1,7 +1,7 @@
 Библиотека для работы c Alba
 =============
 
-Инициализация сервиса:
+####Инициализация сервиса:
 ```objective-c
       RFIPayService * payService = [[RFIPayService alloc]
                                   initWithServiceId: @"12345"
@@ -13,7 +13,7 @@
 Если карта требует проведения 3-D Secure проверку, то paymentResponse.card3ds будет содержать данные
 для POST запроса на сайт банка-эмитента.
 
-Получение токена карты:
+####Получение токена карты:
 
 ```objective-c
         RFICardTokenRequest * cardTokenRequest = [[RFICardTokenRequest alloc] initWithServiceId:payService.serviceId andCard: @"<Номер карты>" andExpMonth: @"<Месяц>" andExpYear:@"<Год>" andCvc:@"<CVC>" andCardHolder: @"<Владелец карты>"];
@@ -38,7 +38,7 @@
         paymentRequest.comment = @"<Комментарий>";    // Необязательное поле
 ```
 
-Получаем ответ от Банка:
+####Получаем ответ от Банка:
 
 ```objective-c
         RFIPaymentResponse * paymentResponse = [payService paymentInit:paymentRequest];
@@ -50,19 +50,19 @@
         NSString * transactionId = paymentResponse.transactionId;
 ```
 
-Получаем статус инициализации транзакции:
+####Получаем статус инициализации транзакции:
 
 ```objective-c
         NSString * status = paymentResponse.status;
 ```
 
-Получаем дополнительный текст по оплате (mc):
+####Получаем дополнительный текст по оплате (mc):
 
 ```objective-c
         NSString * help = paymentResponse.help;
 ```
 
-Если требуется обработка 3DS:
+####Если требуется обработка 3DS:
 
 ```objective-c
         if(paymentResponse.card3ds) {
@@ -83,7 +83,7 @@
         check - подпись запроса
         version=2.0 - версия протокола
                 
-Пример для подписи запроса:
+####Пример для подписи запроса:
 
 ```objective-c
         NSString * check = [RFISigner sign:@"строка для подписи"
@@ -118,7 +118,7 @@
         NSString * transactionPayStatus = transactionDetails.transactionStatus;
 ```
 
-Метод проверки статуса 3DS
+####Метод проверки статуса 3DS
 
 ```objective-c
 - (void) check3DSStatusForService: (NSString *) serviceId
@@ -153,7 +153,7 @@
 }
 ```
 
-Получение статуса транзакции:
+####Получение статуса транзакции:
 
 ```objective-c
        TransactionDetails details = service.transactionDetails(response.getSessionKey());
