@@ -2,10 +2,11 @@
 =============
 
 Инициализация сервиса:
-
+```objective-c
       RFIPayService * payService = [[RFIPayService alloc]
                                   initWithServiceId: @"12345"
                                   andSecret: @"abcd1234"];
+```
 
 Для проведения оплаты банковской картой с вводом карточных данных необходимо сначала создать токен содержащий данные,
 а затем использовать его для инициации платежа. Данные, необходимые для создания токена, содержатся в RFICardTokenRequest.
@@ -14,11 +15,14 @@
 
 Получение токена карты:
 
+```objective-c
         RFICardTokenRequest * cardTokenRequest = [[RFICardTokenRequest alloc] initWithServiceId:payService.serviceId andCard: @"<Номер карты>" andExpMonth: @"<Месяц>" andExpYear:@"<Год>" andCvc:@"<CVC>" andCardHolder: @"<Владелец карты>"];
         RFICardTokenResponse * cardTokenResponse = [payService createCardToken:cardTokenRequest isTest:YES];
-                                  
+```
+
 Если cardTokenResponse.hasErrors == NO, инициализируем транзакцию:
 
+```objective-c
         // Генерируем запрос на оплату
         RFIPaymentRequest * paymentRequest = [[RFIPaymentRequest alloc] init];
 
@@ -32,28 +36,39 @@
         paymentRequest.background = @"1";             // Всегда ставим 1
         paymentRequest.cardToken = cardTokenResponse.token;       // В случае, если канал оплаты spg или spg_test        
         paymentRequest.comment = @"<Комментарий>";    // Необязательное поле
+```
 
 Получаем ответ от Банка:
 
+```objective-c
         RFIPaymentResponse * paymentResponse = [payService paymentInit:paymentRequest];
+```
 
 Если paymentResponse.hasErrors не содержит ошибок, получаем ID транзакции
 
+```objective-c
         NSString * transactionId = paymentResponse.transactionId;
+```
 
 Получаем статус инициализации транзакции:
 
+```objective-c
         NSString * status = paymentResponse.status;
-            
+```
+
 Получаем дополнительный текст по оплате (mc):
 
+```objective-c
         NSString * help = paymentResponse.help;
+```
 
 Если требуется обработка 3DS:
 
+```objective-c
         if(paymentResponse.card3ds) {
             //Обработка 3DS
         }
+```
 
 Если 3-D secure требуется, то необходимо сделать POST запрос на адрес paymentResponse.card3ds.ACSUrl с параметрами:
 
@@ -70,11 +85,13 @@
                 
 Пример для подписи запроса:
 
+```objective-c
         NSString * check = [RFISigner sign:@"строка для подписи"
                                        url:@"URL куда отправляем запрос"
                              requestParams: @{}
                                  secretKey: payService.secret];
-                
+```
+
 Также есть возможность воспользоваться готовым termUrl, для этого достаточно указать:
 
         https://secure.rficb.ru/acquire?sid=<ID-Сервиса>&oid=<ID-Транзакции>&op=pay
@@ -85,59 +102,65 @@
           
 Получение информации о транзакции:
 
+```objective-c
         RFITransactionDetails * transactionDetails = [payService transactionDetails: transactionId];
+```
 
 Статус инициализации транзакции. success - успех
 
+```objective-c
         NSString * transactionStatus = transactionDetails.status;
+```
 
 Статус проведения платежа. open, error, payed, success
 
+```objective-c
         NSString * transactionPayStatus = transactionDetails.transactionStatus;
-
-
+```
 
 Метод проверки статуса 3DS
 
+```objective-c
 - (void) check3DSStatusForService: (NSString *) serviceId
                           orderId: (NSNumber *) orderId
                   emitentResponse: (NSDictionary *) emitentResponse
                      andSecretKey: (NSString *) secretKey
-{
+      {
     
-    NSString *checkURL = @"https://partner.rficb.ru/alba/ack3ds";
+      NSString *checkURL = @"https://partner.rficb.ru/alba/ack3ds";
     
-    NSError *error;
-    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:emitentResponse
+      NSError *error;
+      NSData *jsonData = [NSJSONSerialization dataWithJSONObject:emitentResponse
                                                        options:0
                                                          error:&error];
     
-    NSString *emitentResponseJSON;
+      NSString *emitentResponseJSON;
    
-    emitentResponseJSON = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+      emitentResponseJSON = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
     
-    NSMutableDictionary *paymentParams = [NSMutableDictionary dictionaryWithDictionary:@{
+      NSMutableDictionary *paymentParams = [NSMutableDictionary dictionaryWithDictionary:@{
                                                                                          @"service_id": serviceId,
                                                                                          @"tid": [orderId stringValue],
                                                                                          @"emitent_response": emitentResponseJSON,
                                                                                          @"version": @"2.0"
                                                                                          }];
     
-    RFIRestRequester *requester = [[RFIRestRequester alloc] init];
+      RFIRestRequester *requester = [[RFIRestRequester alloc] init];
     
-        [requester request:checkURL andMethod:@"post" andParams: paymentParams andSecret:secretKey];
+      [requester request:checkURL andMethod:@"post" andParams: paymentParams andSecret:secretKey];
 
-        NSLog(@"Ответ 3ds: %@",requester.responseJSONData);  
+      NSLog(@"Ответ 3ds: %@",requester.responseJSONData);  
 }
-
+```
 
 Получение статуса транзакции:
 
+```objective-c
        TransactionDetails details = service.transactionDetails(response.getSessionKey());
        if (details.getStatus() == TransactionStatus.PAYED || details.getStatus() == TransactionStatus.SUCCESS) {
           // транзакция оплачена
        } else {
           // транзакция не оплачена
        }
-
+```
 
