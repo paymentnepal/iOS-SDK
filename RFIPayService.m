@@ -13,6 +13,7 @@
 #import "RFIRestRequester.h"
 #import "RFIConnectionProfile.h"
 #import "RFITransactionDetails.h"
+#import "RFIReccurentParams.h"
 
 @implementation RFIPayService
 
@@ -97,6 +98,21 @@
     
     if(paymentRequest.commissionMode){
         [requestMutableParams setObject:paymentRequest.commissionMode forKey:@"commission"];
+    }
+    
+    if (paymentRequest.reccurentParams) {
+        if (paymentRequest.reccurentParams.type == RFIReccurentTypeFirst) {
+            requestMutableParams[@"reccurent_type"] = @"first";
+            requestMutableParams[@"reccurent_comment"] = paymentRequest.reccurentParams.comment;
+            requestMutableParams[@"reccurent_url"] = paymentRequest.reccurentParams.url;
+            requestMutableParams[@"reccurent_period"] = paymentRequest.reccurentParams.period;
+        } else {
+            if (!paymentRequest.background) {
+                NSLog(@"Error! When recurrent_type is \"next\" then background should be \"1\"");
+            }
+            requestMutableParams[@"reccurent_type"] = @"next";
+            requestMutableParams[@"recurrent_order_id"] = paymentRequest.reccurentParams.orderId;
+        }
     }
     
     NSDictionary * requestParams = [requestMutableParams copy];
