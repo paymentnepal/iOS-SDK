@@ -56,48 +56,65 @@
 }
 
 //
-// Иницировать платеж
+// Иницировать платеж с аутентификацией по serviceId
 //
 
-- (id) paymentInit: (RFIPaymentRequest *)paymentRequest {
+- (id)paymentInit:(RFIPaymentRequest *)paymentRequest {
     
+    NSDictionary *params = @{@"version": @"2.0",
+                             @"service_id": _serviceId};
     
-    NSMutableDictionary * requestMutableParams = [[NSMutableDictionary alloc] initWithObjectsAndKeys:
-                                                  @"2.0", @"version",
-                                                  _serviceId, @"service_id",
-                                                  paymentRequest.paymentType,@"payment_type",
-                                                  paymentRequest.cost, @"cost",
-                                                  paymentRequest.name,@"name",
-                                                  nil];
+    return [self paymentInitWithRequest:paymentRequest andParams:params];
+}
+
+//
+// Иницировать платеж с аутентификацией по ключу
+//
+
+- (id)paymentInitWithRequest:(RFIPaymentRequest *)paymentRequest andKey:(NSString *)key
+{
+    NSDictionary *params = @{@"key": key};
     
-    if(paymentRequest.email){
-        [requestMutableParams setObject:paymentRequest.email forKey:@"email"];
+    return [self paymentInitWithRequest:paymentRequest andParams:params];
+}
+
+//
+// Иницировать платеж с параметрами
+//
+
+- (id)paymentInitWithRequest:(RFIPaymentRequest *)paymentRequest andParams:(NSDictionary *)params
+{
+    NSMutableDictionary * requestMutableParams = [params mutableCopy];
+    
+    requestMutableParams[@"payment_type"] = paymentRequest.paymentType;
+    requestMutableParams[@"cost"] = paymentRequest.cost;
+    requestMutableParams[@"name"] = paymentRequest.name;
+    
+    if (paymentRequest.email) {
+        requestMutableParams[@"email"] = paymentRequest.email;
     }
     
-    if(paymentRequest.phone){
-        [requestMutableParams setObject:paymentRequest.phone forKey:@"phone_number"];
+    if (paymentRequest.phone) {
+        requestMutableParams[@"phone_number"] = paymentRequest.phone;
     }
     
-    if(paymentRequest.orderId){
-        [requestMutableParams setObject:paymentRequest.orderId forKey:@"order_id"];
+    if (paymentRequest.orderId) {
+        requestMutableParams[@"order_id"] = paymentRequest.orderId;
     }
     
-    if(paymentRequest.cardToken){
-        [requestMutableParams setObject:paymentRequest.cardToken forKey:@"card_token"];
+    if (paymentRequest.cardToken) {
+        requestMutableParams[@"card_token"] = paymentRequest.cardToken;
     }
     
-    if(paymentRequest.comment){
-        [requestMutableParams setObject:paymentRequest.comment forKey:@"comment"];
+    if (paymentRequest.comment) {
+        requestMutableParams[@"comment"] = paymentRequest.comment;
     }
     
-    if(paymentRequest.background){
-        [requestMutableParams setObject:paymentRequest.background forKey:@"background"];
-    } else {
-        [requestMutableParams setObject:@"0" forKey:@"background"];
-    }
+    NSString *background = paymentRequest.background ? paymentRequest.background : @"0";
+    requestMutableParams[@"background"] = background;
     
-    if(paymentRequest.commissionMode){
-        [requestMutableParams setObject:paymentRequest.commissionMode forKey:@"commission"];
+    if (paymentRequest.commissionMode) {
+        requestMutableParams[@"commission"] = paymentRequest.commissionMode;
     }
     
     if (paymentRequest.reccurentParams) {
@@ -115,19 +132,18 @@
         }
     }
     
-    NSDictionary * requestParams = [requestMutableParams copy];
     // Инициализация платежа
     
+    NSDictionary *requestParams = [requestMutableParams copy];
+    
     @try {
-        NSString * hostUrl =  [[RFIConnectionProfile alloc] baseUrl];
+        NSString *hostUrl =  [[RFIConnectionProfile alloc] baseUrl];
+        NSString *url = [hostUrl stringByAppendingString:@"alba/input"];
         
-        NSString * url = [hostUrl stringByAppendingString:@"alba/input"];
-        
-        NSDictionary * restRequest = [[RFIRestRequester alloc] request: url
-                                                             andMethod: @"POST"
-                                                             andParams: requestParams
-                                                             andSecret:_secret];
-//         NSLog(@"restRequest is %@", restRequest);
+        NSDictionary *restRequest = [[RFIRestRequester alloc] request: url
+                                                            andMethod: @"POST"
+                                                            andParams: requestParams
+                                                            andSecret:_secret];
         
         RFIPaymentResponse * paymentResponse = [[RFIPaymentResponse alloc] initWithRequest:restRequest];
         return paymentResponse;
