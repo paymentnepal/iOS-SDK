@@ -86,11 +86,9 @@
                    @"version": @"2.0",
                    @"service_id": self.serviceId
                    };
-    }
-    
-    if (!params) {
+    } else {
         if (failure) {
-            NSString *errorMessage = @"RFIPayService инициализирован неправильно.";
+            NSString *errorMessage = @"RFIPayService should be initialized by key or secret parameter.";
             failure(@{@"Error": errorMessage});
         }
         return;
@@ -170,7 +168,7 @@
     NSString *hostUrl =  [[RFIConnectionProfile alloc] baseUrl];
     NSString *url = [hostUrl stringByAppendingString:@"alba/input"];
     
-    [RFIRestRequester request:url andMethod:@"POST" andParams:requestParams andSecret:self.secret completionBlock:^(NSDictionary *result) {
+    [RFIRestRequester request:url andMethod:@"POST" andParams:requestParams andSecret:self.secret successBlock:^(NSDictionary *result) {
         if (success) {
             RFIPaymentResponse * paymentResponse = [[RFIPaymentResponse alloc] initWithRequest:result];
             if (paymentResponse.hasErrors) {
@@ -194,13 +192,11 @@
                 failure:(errorBlock)failure {
     
     NSDictionary *requestParams = @{
-                                    @"version": @"2.0",
                                     @"card": request.card,
                                     @"service_id": self.serviceId,
                                     @"exp_month": request.expMonth,
                                     @"exp_year": request.expYear,
-                                    @"cvc": request.cvc,
-                                    @"background": @"1"
+                                    @"cvc": request.cvc
                                     };
     
     NSString *hostUrl = @"";
@@ -212,7 +208,7 @@
     
     NSString *url = [hostUrl stringByAppendingString:@"create"];
     
-    [RFIRestRequester request:url andMethod:@"POST" andParams:requestParams andSecret:self.secret completionBlock:^(NSDictionary *result) {
+    [RFIRestRequester request:url andMethod:@"POST" andParams:requestParams andSecret:self.secret successBlock:^(NSDictionary *result) {
         if (success) {
             RFICardTokenResponse * cardTokenResponse = [[RFICardTokenResponse alloc] initWithRequest:result];
             if (cardTokenResponse.hasErrors) {
@@ -235,15 +231,15 @@
                    failure:(errorBlock)failure {
     
     NSDictionary *requestParams = [[NSDictionary alloc] initWithObjectsAndKeys:
-                                    @"2.0", @"version",
-                                    [NSString stringWithFormat:@"%@",transactionId], @"tid",
-                                    self.serviceId, @"service_id",
-                                    nil];
+                                   @"2.0", @"version",
+                                   [NSString stringWithFormat:@"%@",transactionId], @"tid",
+                                   self.serviceId, @"service_id",
+                                   nil];
     
     NSString *hostUrl = [[RFIConnectionProfile alloc] baseUrl];
     NSString *url = [hostUrl stringByAppendingString:@"alba/details"];
     
-    [RFIRestRequester request:url andMethod:@"POST" andParams:requestParams andSecret:self.secret completionBlock:^(NSDictionary *result) {
+    [RFIRestRequester request:url andMethod:@"POST" andParams:requestParams andSecret:self.secret successBlock:^(NSDictionary *result) {
         if (success) {
             RFITransactionDetails *transactionDetails = [[RFITransactionDetails alloc] initWithReponse:result];
             success(transactionDetails);

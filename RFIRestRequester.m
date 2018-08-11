@@ -15,7 +15,7 @@
       andMethod:(NSString *)method
       andParams:(NSDictionary *)requestParams
       andSecret:(NSString *)secret
-completionBlock:(successBlock)success
+   successBlock:(successBlock)success
         failure:(errorBlock)failure {
     
     NSString * urlAsString = url;
