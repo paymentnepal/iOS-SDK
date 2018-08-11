@@ -13,48 +13,42 @@
 #import "RFICardTokenRequest.h"
 #import "RFICardTokenResponse.h"
 
-@interface RFIPayService : NSObject {
-    NSString * _key;
-    NSString * _secret;
-    NSString * _serviceId;
-}
+@class RFITransactionDetails;
 
-@property (nonatomic, copy) NSString * key;
-@property (nonatomic, copy) NSString * secret;
-@property (nonatomic) NSString * serviceId;
+typedef void(^serviceSuccessBlock)(RFIPaymentResponse *response);
+typedef void(^cardTokenSuccessBlock)(RFICardTokenResponse *response);
+typedef void(^transactionSuccessBlock)(RFITransactionDetails *response);
 
--(NSString *) commissionAbonent;
--(NSString *) commissionPartner;
+@interface RFIPayService : NSObject
 
-// OLD
-//- (id) initWithKey: (NSString *)key;
-- (id) initWithServiceId: (NSString *)serviceId andSecret: (NSString *)secret;
+- (instancetype)initWithServiceId:(NSString *)serviceId andSecret:(NSString *)secret;
+- (instancetype)initWithServiceId:(NSString *)serviceId andKey:(NSString *)key;
 
-// Иницировать платеж с аутентификацией по serviceId
-- (id)paymentInit:(RFIPaymentRequest *)paymentRequest;
-
-// Иницировать платеж с аутентификацией по ключу
-- (id)paymentInitWithRequest:(RFIPaymentRequest *)paymentRequest andKey:(NSString *)key;
-
-// Получение списка доступных способов оплаты для сервиса
-- (id) paymentTypes;
+// Иницировать платеж
+- (void)paymentInit:(RFIPaymentRequest *)paymentRequest
+       successBlock:(serviceSuccessBlock)success
+            failure:(errorBlock)failure;
 
 // Получение статуса транзакции
-//- (id) transactionDetails: (NSString *) sessionKey;
-- (id) transactionDetails: (NSString *) transactionId;
+- (void)transactionDetails:(NSString *)transactionId
+              successBlock:(transactionSuccessBlock)success
+                   failure:(errorBlock)failure;
 
 // TODO CLASS RFIRefundRequest
 // Запрос на проведение возврата
 //- (id) refundResponse: (RFIRefundRequest *)refundRequest;
 
 // Создание токена для оплаты
-- (RFICardTokenResponse *) createCardToken: (RFICardTokenRequest *)request isTest: (BOOL) isTest;
+- (void)createCardToken:(RFICardTokenRequest *)request
+                 isTest:(BOOL)isTest
+           successBlock:(cardTokenSuccessBlock)success
+                failure:(errorBlock)failure;
 
 // Подпись Version 2.0
 - (NSString *) generateCheck: (NSDictionary *)requestParams;
 
 // Подпись Version 1.0 1.1 1.2
-- (NSString *) generateCheckOldVersion;
+//- (NSString *) generateCheckOldVersion;
 
 // Генерация строки запроса на сервер банка из переданных параметров
 + (NSString *) generateUrlForRequest: (RFIPaymentRequest *)paymentRequest;

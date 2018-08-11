@@ -8,23 +8,18 @@
 
 #import "RFIRestRequester.h"
 #import "RFISigner.h"
-#import "RFIPayservice.h"
-#import "RFIConnectionProfile.h"
 
 @implementation RFIRestRequester
 
-
-//NSDictionary * returnDictonary = [NSDictionary dictionary];
-
-
-//@synthesize responseJSONData = _responseJSONData;
-
-- (NSDictionary *) request: (NSString *)url andMethod:(NSString *)method andParams:(NSDictionary *)requestParams andSecret:(NSString *)secret {
++ (void)request:(NSString *)url
+      andMethod:(NSString *)method
+      andParams:(NSDictionary *)requestParams
+      andSecret:(NSString *)secret
+   successBlock:(successBlock)success
+        failure:(errorBlock)failure {
     
     NSString * urlAsString = url;
     
-    // Формирование подписи запроса
-    NSString * check = [RFISigner sign :method url:urlAsString requestParams:requestParams secretKey:secret];
     NSString * urlParametrs = @"";
     
     NSURL *urlLink = [NSURL URLWithString:urlAsString];
@@ -49,69 +44,64 @@
         escapedString = [RFISigner escapeString:escapedString];
         
         urlParametrs = [urlParametrs stringByAppendingFormat: @"%@=%@", key, escapedString];
-        
     }
     
-    urlParametrs = [urlParametrs stringByAppendingFormat:@"&check=%@", check];
-//    NSLog(@"urlParametrs %@", urlParametrs);
+    if (secret) {
+        // Формирование подписи запроса
+        NSString * check = [RFISigner sign :method url:urlAsString requestParams:requestParams secretKey:secret];
+        
+        urlParametrs = [urlParametrs stringByAppendingFormat:@"&check=%@", check];
+    }
     
     // GET request
-    if([[method uppercaseString] isEqualToString: @"GET"]) {
+    if ([[method uppercaseString] isEqualToString: @"GET"]) {
         urlParametrs = [@"?" stringByAppendingString: urlParametrs];
     } else {
         // Добавление POST к запросу
         [urlRequest setHTTPBody:[urlParametrs dataUsingEncoding:NSUTF8StringEncoding]];
     }
     
-//    NSLog(@"urlParametrs %@", urlParametrs);
-    
-    NSMutableDictionary * returnDictonary = [NSMutableDictionary dictionary];
-    
-    NSOperationQueue *queue = [[NSOperationQueue alloc] init];
-    NSURLResponse * response = nil;
-    NSError * error = nil;
-    NSData * data = [NSURLConnection sendSynchronousRequest:urlRequest
-                                          returningResponse:&response
-                                                      error:&error];
-    
-//    NSLog(@"data is %@", data);
-    
-    if ([data length] >0  &&
-        error == nil){
-        
-        NSString *html = [[NSString alloc] initWithData:data
-                                               encoding:NSUTF8StringEncoding];
-        
-        NSError *e = nil;
-        NSDictionary * jsonData = [NSJSONSerialization JSONObjectWithData: data options: NSJSONReadingMutableContainers error: &e];
-        
-        if (!jsonData) {
-            NSDictionary * errorMessage = @{@"status": @"error", @"message" : [NSString stringWithFormat:@"Error parsing JSON: %@", e]};
-            self.responseJSONData = errorMessage;
-            
-            NSLog(@"Error parsing JSON: %@", e);
-        } else {
-            self.responseJSONData = jsonData;
+    NSURLSessionDataTask *task = [[NSURLSession sharedSession] dataTaskWithRequest:urlRequest completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+        if (error) {
+            if (failure) {
+                NSDictionary * errorDictionary = @{@"status": @"error", @"message" : [NSString stringWithFormat: @"HTTP error happened = %@", error]};
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    failure(errorDictionary);
+                });
+            }
+            return;
         }
         
-//        NSLog(@"HTML = %@", html);
-    }
-    else if ([data length] == 0 &&
-             error == nil){
-        NSDictionary * errorMessage = @{@"status": @"error", @"message" : @"Empty HTTP response."};
-        self.responseJSONData = errorMessage;
+        if (!data.length) {
+            if (failure) {
+                NSDictionary * errorDictionary = @{@"status": @"error", @"message" : @"Empty HTTP response."};
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    failure(errorDictionary);
+                });
+            }
+            return;
+        }
         
-        NSLog(@"Empty HTTP response.");
-    }
-    else if (error != nil){
-        NSDictionary * errorMessage = @{@"status": @"error", @"message" : [NSString stringWithFormat: @"HTTP error happened = %@", error]};
-        self.responseJSONData = errorMessage;
+        NSError *jsonError = nil;
+        NSDictionary * jsonData = [NSJSONSerialization JSONObjectWithData: data options: NSJSONReadingMutableContainers error: &jsonError];
         
-        NSLog(@"Error happened = %@", error);
-    }
+        if (!jsonData) {
+            if (failure) {
+                NSDictionary * errorDictionary = @{@"status": @"error", @"message" : [NSString stringWithFormat:@"Error parsing JSON: %@", jsonError]};
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    failure(errorDictionary);
+                });
+            }
+        } else {
+            if (success) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    success(jsonData);
+                });
+            }
+        }
+    }];
     
-    return self.responseJSONData;
+    [task resume];
 }
-
 
 @end

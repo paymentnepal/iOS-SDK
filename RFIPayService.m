@@ -15,34 +15,46 @@
 #import "RFITransactionDetails.h"
 #import "RFIReccurentParams.h"
 
-@implementation RFIPayService
+@interface RFIPayService ()
 
+@property (nonatomic, copy) NSString *key;
+@property (nonatomic, copy) NSString *secret;
+@property (nonatomic, copy) NSString *serviceId;
+
+@end
+
+@implementation RFIPayService
 
 // Version 2.0
 - (NSString *) generateCheck: (NSDictionary *)requestParams {
     
     //
     NSString * string = @"";
-    string = [string stringByAppendingFormat: @"%@%@", _serviceId, _secret];
+    string = [string stringByAppendingFormat: @"%@%@", self.serviceId, self.secret];
     string = [string md5];
     
     return string;
 }
 
-- (id) initWithKey: (NSString *)key {
+- (instancetype)initWithServiceId:(NSString *)serviceId andSecret:(NSString *)secret {
     
-    if(self = [super init]) {
-        self.key = key;
+    self = [super init];
+    
+    if (self) {
+        self.serviceId = serviceId;
+        self.secret = secret;
     }
     
     return self;
 }
 
-- (id) initWithServiceId: (NSString *)serviceId andSecret : (NSString *)secret {
+- (instancetype)initWithServiceId:(NSString *)serviceId andKey:(NSString *)key
+{
+    self = [super init];
     
-    if(self = [super init]) {
-        _secret = secret;
-        _serviceId = serviceId;
+    if (self) {
+        self.serviceId = serviceId;
+        self.key = key;
     }
     
     return self;
@@ -56,33 +68,46 @@
 }
 
 //
-// Иницировать платеж с аутентификацией по serviceId
+// Иницировать платеж
 //
 
-- (id)paymentInit:(RFIPaymentRequest *)paymentRequest {
+- (void)paymentInit:(RFIPaymentRequest *)paymentRequest
+       successBlock:(serviceSuccessBlock)success
+            failure:(errorBlock)failure {
     
-    NSDictionary *params = @{@"version": @"2.0",
-                             @"service_id": _serviceId};
+    NSDictionary *params = nil;
     
-    return [self paymentInitWithRequest:paymentRequest andParams:params];
-}
-
-//
-// Иницировать платеж с аутентификацией по ключу
-//
-
-- (id)paymentInitWithRequest:(RFIPaymentRequest *)paymentRequest andKey:(NSString *)key
-{
-    NSDictionary *params = @{@"key": key};
+    if (self.serviceId && self.key) {
+        params = @{
+                   @"key": self.key
+                   };
+    } else if (self.serviceId && self.secret) {
+        params = @{
+                   @"version": @"2.0",
+                   @"service_id": self.serviceId
+                   };
+    } else {
+        if (failure) {
+            NSString *errorMessage = @"RFIPayService should be initialized by key or secret parameter.";
+            failure(@{@"Error": errorMessage});
+        }
+        return;
+    }
     
-    return [self paymentInitWithRequest:paymentRequest andParams:params];
+    return [self paymentInitWithRequest:paymentRequest
+                              andParams:params
+                           successBlock:success
+                                failure:failure];
 }
 
 //
 // Иницировать платеж с параметрами
 //
 
-- (id)paymentInitWithRequest:(RFIPaymentRequest *)paymentRequest andParams:(NSDictionary *)params
+- (void)paymentInitWithRequest:(RFIPaymentRequest *)paymentRequest
+                     andParams:(NSDictionary *)params
+                  successBlock:(serviceSuccessBlock)success
+                       failure:(errorBlock)failure
 {
     NSMutableDictionary * requestMutableParams = [params mutableCopy];
     
@@ -125,7 +150,11 @@
             requestMutableParams[@"reccurent_period"] = paymentRequest.reccurentParams.period;
         } else {
             if (!paymentRequest.background) {
-                NSLog(@"Error! When recurrent_type is \"next\" then background should be \"1\"");
+                if (failure) {
+                    NSString *errorMessage = @"When recurrent_type is \"next\" then background should be \"1\"";
+                    failure(@{@"Error": errorMessage});
+                }
+                return;
             }
             requestMutableParams[@"reccurent_type"] = @"next";
             requestMutableParams[@"recurrent_order_id"] = paymentRequest.reccurentParams.orderId;
@@ -136,96 +165,86 @@
     
     NSDictionary *requestParams = [requestMutableParams copy];
     
-    @try {
-        NSString *hostUrl =  [[RFIConnectionProfile alloc] baseUrl];
-        NSString *url = [hostUrl stringByAppendingString:@"alba/input"];
-        
-        NSDictionary *restRequest = [[RFIRestRequester alloc] request: url
-                                                            andMethod: @"POST"
-                                                            andParams: requestParams
-                                                            andSecret:_secret];
-        
-        RFIPaymentResponse * paymentResponse = [[RFIPaymentResponse alloc] initWithRequest:restRequest];
-        return paymentResponse;
-        
-    } @catch (NSException *exception) {
-        NSLog (@"Обнаружена ошибка с именем %@ и по причине %@.", [exception name], [exception reason]);
-    }
+    NSString *hostUrl =  [[RFIConnectionProfile alloc] baseUrl];
+    NSString *url = [hostUrl stringByAppendingString:@"alba/input"];
+    
+    [RFIRestRequester request:url andMethod:@"POST" andParams:requestParams andSecret:self.secret successBlock:^(NSDictionary *result) {
+        if (success) {
+            RFIPaymentResponse * paymentResponse = [[RFIPaymentResponse alloc] initWithRequest:result];
+            if (paymentResponse.hasErrors) {
+                if (failure) {
+                    failure(@{@"Error": result});
+                }
+            } else {
+                success(paymentResponse);
+            }
+        }
+    } failure:failure];
 }
 
 //
 // Получить токен карты
 //
 
-- (RFICardTokenResponse *) createCardToken: (RFICardTokenRequest *)request isTest: (BOOL) isTest {
+- (void)createCardToken:(RFICardTokenRequest *)request
+                 isTest:(BOOL)isTest
+           successBlock:(cardTokenSuccessBlock)success
+                failure:(errorBlock)failure {
     
-    NSDictionary * requestParams = [[NSDictionary alloc] initWithObjectsAndKeys:
-                                    @"2.0", @"version",
-                                    request.card, @"card",
-                                    _serviceId, @"service_id",
-                                    request.expMonth, @"exp_month",
-                                    request.expYear, @"exp_year",
-                                    request.cvc, @"cvc",
-                                    @"1", @"background",
-                                    nil];
+    NSDictionary *requestParams = @{
+                                    @"card": request.card,
+                                    @"service_id": self.serviceId,
+                                    @"exp_month": request.expMonth,
+                                    @"exp_year": request.expYear,
+                                    @"cvc": request.cvc
+                                    };
     
-    @try {
-        NSString * hostUrl = @"";
-        if(isTest) {
-            hostUrl = [hostUrl stringByAppendingString: [[RFIConnectionProfile alloc] cardTokenTestUrl]];
-        } else {
-            hostUrl = [hostUrl stringByAppendingString: [[RFIConnectionProfile alloc] cardTokenUrl]];
-        }
-        
-        NSString * url = [hostUrl stringByAppendingString:@"create"];
-        
-        NSDictionary * restRequest = [[RFIRestRequester alloc] request: url
-                                                             andMethod: @"POST"
-                                                             andParams: requestParams
-                                                             andSecret:_secret];
-        // NSLog(@"restRequest is %@", restRequest);
-        
-        RFICardTokenResponse * cardTokenResponse = [[RFICardTokenResponse alloc] initWithRequest:restRequest];
-        return cardTokenResponse;
-        
-    } @catch (NSException *exception) {
-        NSLog (@"Обнаружена ошибка с именем %@ и по причине %@.", [exception name], [exception reason]);
+    NSString *hostUrl = @"";
+    if(isTest) {
+        hostUrl = [hostUrl stringByAppendingString:[[RFIConnectionProfile alloc] cardTokenTestUrl]];
+    } else {
+        hostUrl = [hostUrl stringByAppendingString:[[RFIConnectionProfile alloc] cardTokenUrl]];
     }
+    
+    NSString *url = [hostUrl stringByAppendingString:@"create"];
+    
+    [RFIRestRequester request:url andMethod:@"POST" andParams:requestParams andSecret:self.secret successBlock:^(NSDictionary *result) {
+        if (success) {
+            RFICardTokenResponse * cardTokenResponse = [[RFICardTokenResponse alloc] initWithRequest:result];
+            if (cardTokenResponse.hasErrors) {
+                if (failure) {
+                    failure(cardTokenResponse.errors);
+                }
+            } else {
+                success(cardTokenResponse);
+            }
+        }
+    } failure:failure];
 }
 
 //
 // Получить детали транзакции
 //
 
-- (id) transactionDetails: (NSString *) transactionId {
+- (void)transactionDetails:(NSString *)transactionId
+              successBlock:(transactionSuccessBlock)success
+                   failure:(errorBlock)failure {
     
-    RFITransactionDetails * transactionDetails = [RFITransactionDetails alloc];
+    NSDictionary *requestParams = [[NSDictionary alloc] initWithObjectsAndKeys:
+                                   @"2.0", @"version",
+                                   [NSString stringWithFormat:@"%@",transactionId], @"tid",
+                                   self.serviceId, @"service_id",
+                                   nil];
     
-    NSDictionary * requestParams = [[NSDictionary alloc] initWithObjectsAndKeys:
-                                    @"2.0", @"version",
-                                    [NSString stringWithFormat:@"%@",transactionId], @"tid",
-                                    _serviceId, @"service_id",
-                                    nil];
+    NSString *hostUrl = [[RFIConnectionProfile alloc] baseUrl];
+    NSString *url = [hostUrl stringByAppendingString:@"alba/details"];
     
-    @try {
-        NSString * hostUrl = [[RFIConnectionProfile alloc] baseUrl];
-        
-        NSString * url = [hostUrl stringByAppendingString:@"alba/details"];
-        
-        NSDictionary * restRequest = [[RFIRestRequester alloc] request: url
-                                                             andMethod: @"POST"
-                                                             andParams: requestParams
-                                                             andSecret:_secret];
-//        NSLog(@"restRequest is %@", restRequest);
-        
-        transactionDetails = [transactionDetails initWithReponse:restRequest];
-        
-        
-    } @catch (NSException *exception) {
-        NSLog (@"Обнаружена ошибка с именем %@ и по причине %@.", [exception name], [exception reason]);
-    }
-    
-    return transactionDetails;
+    [RFIRestRequester request:url andMethod:@"POST" andParams:requestParams andSecret:self.secret successBlock:^(NSDictionary *result) {
+        if (success) {
+            RFITransactionDetails *transactionDetails = [[RFITransactionDetails alloc] initWithReponse:result];
+            success(transactionDetails);
+        }
+    } failure:failure];
 }
 
 @end

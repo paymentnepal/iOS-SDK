@@ -8,7 +8,6 @@
 
 #import <Foundation/Foundation.h>
 #import "RFIPaymentRequest.h"
-#import "RFIRestRequester.h"
 #import "RFICardThreeDs.h"
 
 @interface RFIPaymentResponse : NSObject
