@@ -30,8 +30,11 @@
 //- (id) initWithKey: (NSString *)key;
 - (id) initWithServiceId: (NSString *)serviceId andSecret: (NSString *)secret;
 
-// Иницировать платеж
-- (id) paymentInit: (RFIPaymentRequest *)request;
+// Иницировать платеж с аутентификацией по serviceId
+- (id)paymentInit:(RFIPaymentRequest *)paymentRequest;
+
+// Иницировать платеж с аутентификацией по ключу
+- (id)paymentInitWithRequest:(RFIPaymentRequest *)paymentRequest andKey:(NSString *)key;
 
 // Получение списка доступных способов оплаты для сервиса
 - (id) paymentTypes;
