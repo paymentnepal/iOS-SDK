@@ -1,11 +1,20 @@
 Библиотека для работы c Alba
 =============
 
-#### Инициализация сервиса:
+#### Инициализация сервиса
+
+Сервис может быть инициализирован двумя способами:
+
+* с передачей параметров serviceId и secret:
+
 ```objective-c
-      RFIPayService * payService = [[RFIPayService alloc]
-                                  initWithServiceId: @"12345"
-                                  andSecret: @"abcd1234"];
+	RFIPayService * payService = [[RFIPayService alloc] initWithServiceId:@"12345" andSecret:@"abcd1234"];
+```
+
+* с передачей параметров serviceId и key:
+
+```objective-c
+	RFIPayService * payService = [[RFIPayService alloc] initWithServiceId:@"12345" andKey:@"abcd1234"];
 ```
 
 Для проведения оплаты банковской картой с вводом карточных данных необходимо сначала создать токен содержащий данные,
@@ -13,11 +22,23 @@
 Если карта требует проведения 3-D Secure проверку, то paymentResponse.card3ds будет содержать данные
 для POST запроса на сайт банка-эмитента.
 
-#### Получение токена карты:
+#### Получение токена карты
+
+Инициализируем запрос RFICardTokenRequest:
 
 ```objective-c
-        RFICardTokenRequest * cardTokenRequest = [[RFICardTokenRequest alloc] initWithServiceId:payService.serviceId andCard: @"<Номер карты>" andExpMonth: @"<Месяц>" andExpYear:@"<Год>" andCvc:@"<CVC>" andCardHolder: @"<Владелец карты>"];
+   	RFICardTokenRequest * cardTokenRequest = [[RFICardTokenRequest alloc] initWithServiceId:payService.serviceId andCard:@"<Номер карты>" andExpMonth:@"<Месяц>" andExpYear:@"<Год>" andCvc:@"<CVC>" andCardHolder:@"<Владелец карты>"];
         RFICardTokenResponse * cardTokenResponse = [payService createCardToken:cardTokenRequest isTest:YES];
+```
+
+Запрашиваем токен карты. Метод **[RFIPayService createCardToken: isTest: successBlock: failure:]** выполняется асинхронно. В случае, если ответ от Банка получен, выполняется successBlock, в противном - failure:
+
+```objective-c
+	RFICardTokenResponse * cardTokenResponse = [payService createCardToken:cardTokenRequest isTest:YES successBlock:^(RFICardTokenResponse *response) {
+		// обработка ответа от Банка
+	} failure:^(NSDictionary *error) {
+  		// обработка ошибки
+	}];
 ```
 
 Если cardTokenResponse.hasErrors == NO, инициализируем транзакцию:
@@ -61,36 +82,42 @@
 	paymentRequest.reccurentParams = reccurentParams;
 ```
 
-#### Получаем ответ от Банка:
+#### Инициируем запрос платежа к Банку
+
+Метод **[RFIPayService paymentInit: successBlock: failure:]** выполняется асинхронно. В случае, если ответ от Банка получен, выполняется successBlock, в противном - failure:
 
 ```objective-c
-        RFIPaymentResponse * paymentResponse = [payService paymentInit:paymentRequest];
+   	RFIPaymentResponse * paymentResponse = [payService paymentInit:paymentRequest successBlock:^(RFIPaymentResponse *response) {
+   		// обработка ответа от Банка
+	} failure:^(NSDictionary *error) {
+		// обработка ошибки
+	}];
 ```
 
 Если paymentResponse.hasErrors не содержит ошибок, получаем ID транзакции
 
 ```objective-c
-        NSString * transactionId = paymentResponse.transactionId;
+  	NSString * transactionId = paymentResponse.transactionId;
 ```
 
 #### Получаем статус инициализации транзакции:
 
 ```objective-c
-        NSString * status = paymentResponse.status;
+ 	NSString * status = paymentResponse.status;
 ```
 
 #### Получаем дополнительный текст по оплате (mc):
 
 ```objective-c
-        NSString * help = paymentResponse.help;
+	NSString * help = paymentResponse.help;
 ```
 
 #### Если требуется обработка 3DS:
 
 ```objective-c
-        if(paymentResponse.card3ds) {
-            //Обработка 3DS
-        }
+	if(paymentResponse.card3ds) {
+		//Обработка 3DS
+	}
 ```
 
 Если 3-D secure требуется, то необходимо сделать POST запрос на адрес paymentResponse.card3ds.ACSUrl с параметрами:
@@ -106,6 +133,7 @@
         check - подпись запроса
         version=2.0 - версия протокола
                 
+
 #### Пример для подписи запроса:
 
 ```objective-c
