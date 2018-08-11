@@ -20,8 +20,6 @@ completionBlock:(successBlock)success
     
     NSString * urlAsString = url;
     
-    // Формирование подписи запроса
-    NSString * check = [RFISigner sign :method url:urlAsString requestParams:requestParams secretKey:secret];
     NSString * urlParametrs = @"";
     
     NSURL *urlLink = [NSURL URLWithString:urlAsString];
@@ -48,7 +46,12 @@ completionBlock:(successBlock)success
         urlParametrs = [urlParametrs stringByAppendingFormat: @"%@=%@", key, escapedString];
     }
     
-    urlParametrs = [urlParametrs stringByAppendingFormat:@"&check=%@", check];
+    if (secret) {
+        // Формирование подписи запроса
+        NSString * check = [RFISigner sign :method url:urlAsString requestParams:requestParams secretKey:secret];
+        
+        urlParametrs = [urlParametrs stringByAppendingFormat:@"&check=%@", check];
+    }
     
     // GET request
     if ([[method uppercaseString] isEqualToString: @"GET"]) {
