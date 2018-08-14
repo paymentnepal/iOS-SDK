@@ -151,10 +151,14 @@
 
         https://test.rficb.ru/acquire?sid=<ID-Сервиса>&oid=<ID-Транзакции>&op=pay
           
-Получение информации о транзакции:
+Получение информации о транзакции. Метод **[RFIPayService transactionDetails: successBlock: failure:]** выполняется асинхронно. В случае, если ответ от Банка получен, выполняется successBlock, в противном - failure:
 
 ```objective-c
-        RFITransactionDetails * transactionDetails = [payService transactionDetails: transactionId];
+ 	[payService transactionDetails: transactionId successBlock:^(RFIPaymentResponse *response) {
+ 		// обработка ответа от Банка
+	} failure:^(NSDictionary *error) {
+		// обработка ошибки
+	}];
 ```
 
 Статус инициализации транзакции. success - успех
