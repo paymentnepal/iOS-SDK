@@ -34,7 +34,7 @@
 Запрашиваем токен карты. Метод **[RFIPayService createCardToken: isTest: successBlock: failure:]** выполняется асинхронно. В случае, если ответ от Банка получен, выполняется successBlock, в противном - failure:
 
 ```objective-c
-	RFICardTokenResponse * cardTokenResponse = [payService createCardToken:cardTokenRequest isTest:YES successBlock:^(RFICardTokenResponse *response) {
+	[payService createCardToken:cardTokenRequest isTest:YES successBlock:^(RFICardTokenResponse *response) {
 		// обработка ответа от Банка
 	} failure:^(NSDictionary *error) {
   		// обработка ошибки
@@ -87,7 +87,7 @@
 Метод **[RFIPayService paymentInit: successBlock: failure:]** выполняется асинхронно. В случае, если ответ от Банка получен, выполняется successBlock, в противном - failure:
 
 ```objective-c
-   	RFIPaymentResponse * paymentResponse = [payService paymentInit:paymentRequest successBlock:^(RFIPaymentResponse *response) {
+   	[payService paymentInit:paymentRequest successBlock:^(RFIPaymentResponse *response) {
    		// обработка ответа от Банка
 	} failure:^(NSDictionary *error) {
 		// обработка ошибки
@@ -151,10 +151,14 @@
 
         https://test.rficb.ru/acquire?sid=<ID-Сервиса>&oid=<ID-Транзакции>&op=pay
           
-Получение информации о транзакции:
+Получение информации о транзакции. Метод **[RFIPayService transactionDetails: successBlock: failure:]** выполняется асинхронно. В случае, если ответ от Банка получен, выполняется successBlock, в противном - failure:
 
 ```objective-c
-        RFITransactionDetails * transactionDetails = [payService transactionDetails: transactionId];
+ 	[payService transactionDetails: transactionId successBlock:^(RFIPaymentResponse *response) {
+ 		// обработка ответа от Банка
+	} failure:^(NSDictionary *error) {
+		// обработка ошибки
+	}];
 ```
 
 Статус инициализации транзакции. success - успех
