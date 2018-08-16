@@ -30,9 +30,9 @@ typedef void(^transactionSuccessBlock)(RFITransactionDetails *response);
             failure:(errorBlock)failure;
 
 // Получение статуса транзакции
-- (void)transactionDetails:(NSString *)transactionId
-              successBlock:(transactionSuccessBlock)success
-                   failure:(errorBlock)failure;
+- (void)transactionDetailsWithSessionKey:(NSString *)sessionKey
+                            successBlock:(transactionSuccessBlock)success
+                                 failure:(errorBlock)failure;
 
 // TODO CLASS RFIRefundRequest
 // Запрос на проведение возврата
