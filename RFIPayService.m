@@ -141,10 +141,10 @@ static NSString *version = @"2.1";
     
     if (paymentRequest.reccurentParams) {
         if (paymentRequest.reccurentParams.type == RFIReccurentTypeFirst) {
-            requestMutableParams[@"reccurent_type"] = @"first";
-            requestMutableParams[@"reccurent_comment"] = paymentRequest.reccurentParams.comment;
-            requestMutableParams[@"reccurent_url"] = paymentRequest.reccurentParams.url;
-            requestMutableParams[@"reccurent_period"] = paymentRequest.reccurentParams.period;
+            requestMutableParams[@"recurrent_type"] = @"first";
+            requestMutableParams[@"recurrent_comment"] = paymentRequest.reccurentParams.comment;
+            requestMutableParams[@"recurrent_url"] = paymentRequest.reccurentParams.url;
+            requestMutableParams[@"recurrent_period"] = paymentRequest.reccurentParams.period;
         } else {
             if (!paymentRequest.background) {
                 if (failure) {
@@ -153,7 +153,7 @@ static NSString *version = @"2.1";
                 }
                 return;
             }
-            requestMutableParams[@"reccurent_type"] = @"next";
+            requestMutableParams[@"recurrent_type"] = @"next";
             requestMutableParams[@"recurrent_order_id"] = paymentRequest.reccurentParams.orderId;
         }
     }

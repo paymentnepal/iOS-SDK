@@ -18,6 +18,7 @@
 typedef void(^serviceSuccessBlock)(RFIPaymentResponse *response);
 typedef void(^cardTokenSuccessBlock)(RFICardTokenResponse *response);
 typedef void(^transactionSuccessBlock)(RFITransactionDetails *response);
+typedef void(^errorBlock)(NSDictionary *error);
 
 @interface RFIPayService : NSObject
 
