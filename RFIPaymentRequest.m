@@ -8,6 +8,7 @@
 
 #import "RFIPaymentRequest.h"
 #import "RFIReccurentParams.h"
+#import "RFIInvoiceData.h"
 
 @implementation RFIPaymentRequest
 

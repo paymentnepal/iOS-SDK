@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 
 @class RFIReccurentParams;
+@class RFIInvoiceData;
 
 @interface RFIPaymentRequest : NSObject {
     NSString * _paymentType;
@@ -45,6 +46,6 @@
 @property (nonatomic, copy) NSString * test;
 
 @property (nonatomic, strong) RFIReccurentParams *reccurentParams;
-
+@property (nonatomic, strong) RFIInvoiceData *invoiceData;
 
 @end

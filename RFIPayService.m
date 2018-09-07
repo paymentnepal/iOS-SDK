@@ -14,6 +14,7 @@
 #import "RFIConnectionProfile.h"
 #import "RFITransactionDetails.h"
 #import "RFIReccurentParams.h"
+#import "RFIInvoiceData.h"
 
 static NSString *version = @"2.1";
 
@@ -156,6 +157,10 @@ static NSString *version = @"2.1";
             requestMutableParams[@"recurrent_type"] = @"next";
             requestMutableParams[@"recurrent_order_id"] = paymentRequest.reccurentParams.orderId;
         }
+    }
+    
+    if (paymentRequest.invoiceData) {
+        requestMutableParams[@"invoice_data"] = [paymentRequest.invoiceData parameters];
     }
     
     // Инициализация платежа
