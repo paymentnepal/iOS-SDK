@@ -85,7 +85,7 @@
 Если нужно добавить данные чека для фискализации, то необходимо создать объект RFIInvoiceData и передать его в параметре paymentRequest:
 
 ```objective-c
-	RFIInvoiceData *invoiceData = [RFIInvoiceData new];
+    RFIInvoiceData *invoiceData = [RFIInvoiceData new];
     invoiceData.vatTotal = @(<стоимость>);
     
     RFIInvoiceItem *firstItem = [RFIInvoiceItem new];
@@ -106,7 +106,7 @@
     
     invoiceData.items = @[firstItem, secondItem];
 
-	paymentRequest.invoiceData = invoiceData;
+    paymentRequest.invoiceData = invoiceData;
 ```
 
 #### Инициируем запрос платежа к Банку
