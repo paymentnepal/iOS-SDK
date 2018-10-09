@@ -82,31 +82,41 @@
 	paymentRequest.reccurentParams = reccurentParams;
 ```
 
+Отменить рекуррентные платежи можно следующим методом:
+
+```objective-c
+ 	[payService cancelRecurrentPaymentWithOrderId:reccurentOrderId successBlock:^{
+ 		// обработка ответа от Банка
+ 	} failure:^(NSDictionary *error) {
+ 		// обработка ошибки
+ 	}];
+```
+
 Если нужно добавить данные чека для фискализации, то необходимо создать объект RFIInvoiceData и передать его в параметре paymentRequest:
 
 ```objective-c
-    RFIInvoiceData *invoiceData = [RFIInvoiceData new];
-    invoiceData.vatTotal = @(<стоимость>);
-    
-    RFIInvoiceItem *firstItem = [RFIInvoiceItem new];
-    firstItem.code = @"<Код товара>";
-    firstItem.name = @"<Наименование товара>";
-    firstItem.unit = @"<Единица измерения>";
-    firstItem.vatMode = @"<Тип НДС>";
-    firstItem.price = @(<Цена за единицу>);
-    firstItem.quantity = @(<Количество единиц>);
-    firstItem.sum = @(<Цена>);
-    firstItem.vatAmount = @(<Размер НДС>);
-    firstItem.discountRate = @(<Скидка в процентах>);
-    firstItem.discountAmount = @(<Скидка в рублях (вкл. в стоимость)>);
+ 	RFIInvoiceData *invoiceData = [RFIInvoiceData new];
+ 	invoiceData.vatTotal = @(<стоимость>);
+ 	
+ 	RFIInvoiceItem *firstItem = [RFIInvoiceItem new];
+ 	firstItem.code = @"<Код товара>";
+ 	firstItem.name = @"<Наименование товара>";
+ 	firstItem.unit = @"<Единица измерения>";
+ 	firstItem.vatMode = @"<Тип НДС>";
+ 	firstItem.price = @(<Цена за единицу>);
+ 	firstItem.quantity = @(<Количество единиц>);
+ 	firstItem.sum = @(<Цена>);
+ 	firstItem.vatAmount = @(<Размер НДС>);
+ 	firstItem.discountRate = @(<Скидка в процентах>);
+ 	firstItem.discountAmount = @(<Скидка в рублях (вкл. в стоимость)>);
 
-    RFIInvoiceItem *secondItem = [RFIInvoiceItem new];
-    secondItem.code = @"<Код товара>";
-    ...
-    
-    invoiceData.items = @[firstItem, secondItem];
+ 	RFIInvoiceItem *secondItem = [RFIInvoiceItem new];
+ 	secondItem.code = @"<Код товара>";
+ 	...
+ 
+ 	invoiceData.items = @[firstItem, secondItem];
 
-    paymentRequest.invoiceData = invoiceData;
+ 	paymentRequest.invoiceData = invoiceData;
 ```
 
 #### Инициируем запрос платежа к Банку
