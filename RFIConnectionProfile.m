@@ -8,20 +8,21 @@
 
 #import "RFIConnectionProfile.h"
 
-static NSString * const baseUrl = @"https://partner.rficb.ru/";
+static NSString * const baseUrl = @"https://partner.rficb.ru/alba/";
 static NSString * const cardTokenUrl = @"https://secure.rficb.ru/cardtoken/";
 static NSString * const cardTokenTestUrl = @"https://test.rficb.ru/cardtoken/";
 
 @implementation RFIConnectionProfile
 
-
-- (NSString *) baseUrl {
++ (NSString *)baseUrl {
     return baseUrl;
 }
-- (NSString *) cardTokenUrl {
+
++ (NSString *)cardTokenUrl {
     return cardTokenUrl;
 }
-- (NSString *) cardTokenTestUrl {
+
++ (NSString *)cardTokenTestUrl {
     return cardTokenTestUrl;
 }
 
