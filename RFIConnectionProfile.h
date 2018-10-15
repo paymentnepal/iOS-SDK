@@ -10,8 +10,8 @@
 
 @interface RFIConnectionProfile : NSObject
 
--(NSString *) baseUrl;
--(NSString *) cardTokenUrl;
--(NSString *) cardTokenTestUrl;
++ (NSString *)baseUrl;
++ (NSString *)cardTokenUrl;
++ (NSString *)cardTokenTestUrl;
 
 @end

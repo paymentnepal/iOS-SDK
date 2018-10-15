@@ -167,8 +167,8 @@ static NSString *version = @"2.1";
     
     NSDictionary *requestParams = [requestMutableParams copy];
     
-    NSString *hostUrl =  [[RFIConnectionProfile alloc] baseUrl];
-    NSString *url = [hostUrl stringByAppendingString:@"alba/input"];
+    NSString *hostUrl =  [RFIConnectionProfile baseUrl];
+    NSString *url = [hostUrl stringByAppendingString:@"input"];
     
     [RFIRestRequester request:url andMethod:@"POST" andParams:requestParams andSecret:self.secret successBlock:^(NSDictionary *result) {
         if (success) {
@@ -203,9 +203,9 @@ static NSString *version = @"2.1";
     
     NSString *hostUrl = @"";
     if(isTest) {
-        hostUrl = [hostUrl stringByAppendingString:[[RFIConnectionProfile alloc] cardTokenTestUrl]];
+        hostUrl = [hostUrl stringByAppendingString:[RFIConnectionProfile cardTokenTestUrl]];
     } else {
-        hostUrl = [hostUrl stringByAppendingString:[[RFIConnectionProfile alloc] cardTokenUrl]];
+        hostUrl = [hostUrl stringByAppendingString:[RFIConnectionProfile cardTokenUrl]];
     }
     
     NSString *url = [hostUrl stringByAppendingString:@"create"];
@@ -237,13 +237,46 @@ static NSString *version = @"2.1";
                                     @"session_key": sessionKey
                                     };
     
-    NSString *hostUrl = [[RFIConnectionProfile alloc] baseUrl];
-    NSString *url = [hostUrl stringByAppendingString:@"alba/details"];
+    NSString *hostUrl = [RFIConnectionProfile baseUrl];
+    NSString *url = [hostUrl stringByAppendingString:@"details"];
     
     [RFIRestRequester request:url andMethod:@"POST" andParams:requestParams andSecret:nil successBlock:^(NSDictionary *result) {
         if (success) {
             RFITransactionDetails *transactionDetails = [[RFITransactionDetails alloc] initWithReponse:result];
             success(transactionDetails);
+        }
+    } failure:failure];
+}
+
+// Отмена рекуррентного платежа
+- (void)cancelRecurrentPaymentWithOrderId:(NSString *)orderId
+                             successBlock:(cancelationSuccessBlock)success
+                                  failure:(errorBlock)failure {
+    NSMutableDictionary *params = [@{
+                                     @"operation": @"cancel",
+                                     @"order_id": orderId,
+                                     @"version": version
+                                     } mutableCopy];
+    
+    if (self.serviceId && self.key) {
+        params[@"key"] = self.key;
+    } else if (self.serviceId && self.secret) {
+        params[@"service_id"] = self.serviceId;
+    }
+    
+    NSString *url = [[RFIConnectionProfile baseUrl] stringByAppendingString:@"recurrent_change/"];
+    
+    [RFIRestRequester request:url andMethod:@"POST" andParams:[params copy] andSecret:self.secret successBlock:^(NSDictionary *result) {
+        NSString *status = result[@"status"];
+        if ([status isEqualToString:@"success"]) {
+            if (success) {
+                success();
+            }
+        } else {
+            if (failure) {
+                NSDictionary *error = result[@"error"];
+                failure(error);
+            }
         }
     } failure:failure];
 }

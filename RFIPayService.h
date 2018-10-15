@@ -18,6 +18,7 @@
 typedef void(^serviceSuccessBlock)(RFIPaymentResponse *response);
 typedef void(^cardTokenSuccessBlock)(RFICardTokenResponse *response);
 typedef void(^transactionSuccessBlock)(RFITransactionDetails *response);
+typedef void(^cancelationSuccessBlock)(void);
 typedef void(^errorBlock)(NSDictionary *error);
 
 @interface RFIPayService : NSObject
@@ -53,5 +54,10 @@ typedef void(^errorBlock)(NSDictionary *error);
 
 // Генерация строки запроса на сервер банка из переданных параметров
 + (NSString *) generateUrlForRequest: (RFIPaymentRequest *)paymentRequest;
+
+// Отмена рекуррентного платежа
+- (void)cancelRecurrentPaymentWithOrderId:(NSString *)orderId
+                             successBlock:(cancelationSuccessBlock)success
+                                  failure:(errorBlock)failure;
 
 @end
