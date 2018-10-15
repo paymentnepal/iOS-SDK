@@ -14,6 +14,19 @@
 
 @implementation RFIInvoiceData
 
++ (instancetype)invoiceDataWithVatTotal:(NSNumber *)vatTotal
+                          discountTotal:(NSNumber *)discountTotal
+                           invoiceItems:(NSArray<RFIInvoiceItem *> *)items
+{
+    RFIInvoiceData *invoiceData = [RFIInvoiceData new];
+    
+    invoiceData.vatTotal = vatTotal;
+    invoiceData.discountTotal = discountTotal;
+    invoiceData.items = items;
+    
+    return invoiceData;
+}
+
 - (NSString *)parameters {
     
     NSMutableArray *invoiceItems = [NSMutableArray new];

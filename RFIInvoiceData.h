@@ -29,6 +29,10 @@
 @property (nonatomic, strong) NSNumber *discountTotal;
 @property (nonatomic, strong) NSArray<RFIInvoiceItem *> *items;
 
++ (instancetype)invoiceDataWithVatTotal:(NSNumber *)vatTotal
+                          discountTotal:(NSNumber *)discountTotal
+                           invoiceItems:(NSArray<RFIInvoiceItem *> *)items;
+
 - (NSString *)parameters;
 
 @end
