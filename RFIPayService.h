@@ -26,36 +26,36 @@ typedef void(^errorBlock)(NSDictionary *error);
 - (instancetype)initWithServiceId:(NSString *)serviceId andSecret:(NSString *)secret;
 - (instancetype)initWithServiceId:(NSString *)serviceId andKey:(NSString *)key;
 
-// Иницировать платеж
+// Init payment
 - (void)paymentInit:(RFIPaymentRequest *)paymentRequest
        successBlock:(serviceSuccessBlock)success
             failure:(errorBlock)failure;
 
-// Получение статуса транзакции
+// Get transaction state
 - (void)transactionDetailsWithSessionKey:(NSString *)sessionKey
                             successBlock:(transactionSuccessBlock)success
                                  failure:(errorBlock)failure;
 
 // TODO CLASS RFIRefundRequest
-// Запрос на проведение возврата
+// Init refund request
 //- (id) refundResponse: (RFIRefundRequest *)refundRequest;
 
-// Создание токена для оплаты
+// Create payment token
 - (void)createCardToken:(RFICardTokenRequest *)request
                  isTest:(BOOL)isTest
            successBlock:(cardTokenSuccessBlock)success
                 failure:(errorBlock)failure;
 
-// Подпись Version 2.0
+// Sign Version 2.0
 - (NSString *) generateCheck: (NSDictionary *)requestParams;
 
-// Подпись Version 1.0 1.1 1.2
+// Sign Version 1.0 1.1 1.2
 //- (NSString *) generateCheckOldVersion;
 
-// Генерация строки запроса на сервер банка из переданных параметров
+// Generate request string to gateway server from params provided
 + (NSString *) generateUrlForRequest: (RFIPaymentRequest *)paymentRequest;
 
-// Отмена рекуррентного платежа
+// Cancel recurrent payment
 - (void)cancelRecurrentPaymentWithOrderId:(NSString *)orderId
                              successBlock:(cancelationSuccessBlock)success
                                   failure:(errorBlock)failure;

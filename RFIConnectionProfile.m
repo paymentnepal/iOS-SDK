@@ -8,9 +8,9 @@
 
 #import "RFIConnectionProfile.h"
 
-static NSString * const baseUrl = @"https://partner.rficb.ru/alba/";
-static NSString * const cardTokenUrl = @"https://secure.rficb.ru/cardtoken/";
-static NSString * const cardTokenTestUrl = @"https://test.rficb.ru/cardtoken/";
+static NSString * const baseUrl = @"https://pay.paymentnepal.com/alba/";
+static NSString * const cardTokenUrl = @"https://secure.paymentnepal.com/cardtoken/";
+// static NSString * const cardTokenTestUrl = @"https://test.rficb.ru/cardtoken/";
 
 @implementation RFIConnectionProfile
 

@@ -1,117 +1,115 @@
-Библиотека для работы c Alba
+API client for Alba
 =============
 
-#### Инициализация сервиса
+#### Init service
 
-Сервис может быть инициализирован двумя способами:
+Service can be inited two ways:
 
-* с передачей параметров serviceId и secret:
+* providing serviceId and secret:
 
 ```objective-c
 	RFIPayService * payService = [[RFIPayService alloc] initWithServiceId:@"12345" andSecret:@"abcd1234"];
 ```
 
-* с передачей параметров serviceId и key:
+* providing  serviceId and key:
 
 ```objective-c
 	RFIPayService * payService = [[RFIPayService alloc] initWithServiceId:@"12345" andKey:@"abcd1234"];
 ```
 
-Для проведения оплаты банковской картой с вводом карточных данных необходимо сначала создать токен содержащий данные,
-а затем использовать его для инициации платежа. Данные, необходимые для создания токена, содержатся в RFICardTokenRequest.
-Если карта требует проведения 3-D Secure проверку, то paymentResponse.card3ds будет содержать данные
-для POST запроса на сайт банка-эмитента.
+To make payment with bank card a toked containing card data must be generated. This token will be used to init payment. Data needed for token creating is provided in RFICardTokenRequest.
+If card is involved into 3-D secure, then paymentResponse.card3ds will contain data for POST request to card issuer.
 
-#### Получение токена карты
+#### Getting card token
 
-Инициализируем запрос RFICardTokenRequest:
+Init RFICardTokenRequest:
 
 ```objective-c
-   	RFICardTokenRequest * cardTokenRequest = [[RFICardTokenRequest alloc] initWithServiceId:payService.serviceId andCard:@"<Номер карты>" andExpMonth:@"<Месяц>" andExpYear:@"<Год>" andCvc:@"<CVC>" andCardHolder:@"<Владелец карты>"];
+   	RFICardTokenRequest * cardTokenRequest = [[RFICardTokenRequest alloc] initWithServiceId:payService.serviceId andCard:@"<card number>" andExpMonth:@"<exp date month>" andExpYear:@"<exp date year>" andCvc:@"<CVC>" andCardHolder:@"<cardholder>"];
         RFICardTokenResponse * cardTokenResponse = [payService createCardToken:cardTokenRequest isTest:YES];
 ```
 
-Запрашиваем токен карты. Метод **[RFIPayService createCardToken: isTest: successBlock: failure:]** выполняется асинхронно. В случае, если ответ от Банка получен, выполняется successBlock, в противном - failure:
+Request card token.Method **[RFIPayService createCardToken: isTest: successBlock: failure:]** is async. In case of successful response from bank successBlock is called, otherwise failure is called:
 
 ```objective-c
 	[payService createCardToken:cardTokenRequest isTest:YES successBlock:^(RFICardTokenResponse *response) {
-		// обработка ответа от Банка
+		// handling bank response
 	} failure:^(NSDictionary *error) {
-  		// обработка ошибки
+  		// handling error response
 	}];
 ```
 
-Если cardTokenResponse.hasErrors == NO, инициализируем транзакцию:
+If cardTokenResponse.hasErrors == NO, init transaction:
 
 ```objective-c
-        // Генерируем запрос на оплату
+        // Generate payment request
         RFIPaymentRequest * paymentRequest = [[RFIPaymentRequest alloc] init];
 
         // Собираем необходимые параметры для платежа
-        paymentRequest.paymentType = @"spg_test";     // Варинаты: mc, qiwi, spg, spg_test
-        paymentRequest.email = @"<Email>";            // Может быть обязательным, в зависисмости от настроек сервиса
-        paymentRequest.cost = @"<Сумма>";             // в целых
+        paymentRequest.paymentType = @"spg_test";     // Possible values: mc, qiwi, spg, spg_test
+        paymentRequest.email = @"<Email>";            // May be required depending on service settings
+        paymentRequest.cost = @"<Сумма>";             // int
         paymentRequest.name = @"<Название платежа>";        
-        paymentRequest.phone = @"<Номер телефона>";   // Обязательно, если канал оплаты mc, qiwi
-        paymentRequest.orderId = @"<Номер заказа>";   // Номер заказа должен быть уникальным. Необязательное поле
-        paymentRequest.background = @"1";             // Всегда ставим 1
-        paymentRequest.cardToken = cardTokenResponse.token;       // В случае, если канал оплаты spg или spg_test        
-        paymentRequest.comment = @"<Комментарий>";    // Необязательное поле
+        paymentRequest.phone = @"<Номер телефона>";   // Required if paymentType in (mc, qiwi)
+        paymentRequest.orderId = @"<Номер заказа>";   // orderId must be unique. Additional field
+        paymentRequest.background = @"1";             // Always 1
+        paymentRequest.cardToken = cardTokenResponse.token;       // If paymentType is spg or spg_test        
+        paymentRequest.comment = @"<Комментарий>";    // Additional field
 ```
 
-В случае, если платеж рекуррентный, то paymentRequest необходимо передать дополнительные параметры, описанные в RFIReccurentParams. Рекуррентный платеж (РП) состоит из двух операций:
+In case of recurrent payment additional params described in RFIReccurentParams must be provided in paymentRequest. Recurrent payment consists of two operations:
 	
-* платеж с регистрацией рекуррентного платежа (для первого РП)
+* Payment with registering recurrent payment (for the first recurrent payment)
 
 ```objective-c
-	NSString *url = @"<Ссылка на подробное описание правил предоставления рекуррентного платежа>";
-	NSString *comment = @"<Текстовое описание за что производится регистрация РП>";
+	NSString *url = @"<Terms and rules of payment service link>";
+	NSString *comment = @"<Text description of purpose of recurrent payment registration>";
 	RFIReccurentParams *reccurentParams = [RFIReccurentParams firstWithUrl:url andComment:comment];
 ```
 
-* рекуррентный платеж по требованию (все последующие РП)
+* Recurrent payment by request (second and further payments)
 
 ```objective-c
-	NSString *reccurentOrderId = @"<номер заказа>";
+	NSString *reccurentOrderId = @"<order_id>";
 	RFIReccurentParams *reccurentParams = [RFIReccurentParams nextWithOrderId:reccurentOrderId];
 ```
 
-Затем передаем параметры рекуррентного платежа запросу на оплату:
+After that you must provide recurrent payment params into payment request:
 
 ```objective-c
 	paymentRequest.reccurentParams = reccurentParams;
 ```
 
-Отменить рекуррентные платежи можно следующим методом:
+To cancel recurrent payments:
 
 ```objective-c
  	[payService cancelRecurrentPaymentWithOrderId:reccurentOrderId successBlock:^{
- 		// обработка ответа от Банка
+ 		// handling bank response
  	} failure:^(NSDictionary *error) {
- 		// обработка ошибки
+ 		// handling error response
  	}];
 ```
 
-Если нужно добавить данные чека для фискализации, то необходимо создать объект RFIInvoiceData и передать его в параметре paymentRequest:
+If you need to add invoice data for fiscalization you'll need to implement RFIInvoiceData object and provide it into paymentRequest:
 
 ```objective-c
  	RFIInvoiceData *invoiceData = [RFIInvoiceData new];
- 	invoiceData.vatTotal = @(<стоимость>);
+ 	invoiceData.vatTotal = @(<amount>);
  	
  	RFIInvoiceItem *firstItem = [RFIInvoiceItem new];
- 	firstItem.code = @"<Код товара>";
- 	firstItem.name = @"<Наименование товара>";
- 	firstItem.unit = @"<Единица измерения>";
- 	firstItem.vatMode = @"<Тип НДС>";
- 	firstItem.price = @(<Цена за единицу>);
- 	firstItem.quantity = @(<Количество единиц>);
- 	firstItem.sum = @(<Цена>);
- 	firstItem.vatAmount = @(<Размер НДС>);
- 	firstItem.discountRate = @(<Скидка в процентах>);
- 	firstItem.discountAmount = @(<Скидка в рублях (вкл. в стоимость)>);
+ 	firstItem.code = @"<item code>";
+ 	firstItem.name = @"<item name>";
+ 	firstItem.unit = @"<unit of measurment>";
+ 	firstItem.vatMode = @"<VAT amount>";
+ 	firstItem.price = @(<cost per unit>);
+ 	firstItem.quantity = @(<quantity>);
+ 	firstItem.sum = @(<total amount>);
+ 	firstItem.vatAmount = @(<VAT total>);
+ 	firstItem.discountRate = @(<Discount (percent)>);
+ 	firstItem.discountAmount = @(<Discount total>);
 
  	RFIInvoiceItem *secondItem = [RFIInvoiceItem new];
- 	secondItem.code = @"<Код товара>";
+ 	secondItem.code = @"<item code>";
  	...
  
  	invoiceData.items = @[firstItem, secondItem];
@@ -119,98 +117,98 @@
  	paymentRequest.invoiceData = invoiceData;
 ```
 
-#### Инициируем запрос платежа к Банку
+#### Init payment request to bank
 
-Метод **[RFIPayService paymentInit: successBlock: failure:]** выполняется асинхронно. В случае, если ответ от Банка получен, выполняется successBlock, в противном - failure:
+Method **[RFIPayService paymentInit: successBlock: failure:]** is async. In case of successful response from bank successBlock is called, otherwise failure is called:
 
 ```objective-c
    	[payService paymentInit:paymentRequest successBlock:^(RFIPaymentResponse *response) {
-   		// обработка ответа от Банка
+   		// handling bank response
 	} failure:^(NSDictionary *error) {
-		// обработка ошибки
+		// handling error response
 	}];
 ```
 
-Если paymentResponse.hasErrors не содержит ошибок, получаем ID транзакции
+If paymentResponse.hasErrors doesn't contain errors, get transaction ID
 
 ```objective-c
   	NSString * transactionId = paymentResponse.transactionId;
 ```
 
-#### Получаем статус инициализации транзакции:
+#### Get transaction init state
 
 ```objective-c
  	NSString * status = paymentResponse.status;
 ```
 
-#### Получаем дополнительный текст по оплате (mc):
+#### Get additional payment text (for paymentType 'mc' only):
 
 ```objective-c
 	NSString * help = paymentResponse.help;
 ```
 
-#### Если требуется обработка 3DS:
+#### If 3DS is needed:
 
 ```objective-c
 	if(paymentResponse.card3ds) {
-		//Обработка 3DS
+		//3DS handling
 	}
 ```
 
-Если 3-D secure требуется, то необходимо сделать POST запрос на адрес paymentResponse.card3ds.ACSUrl с параметрами:
+If 3-D secure id needed you need to send POST request to paymentResponse.card3ds.ACSUrl URL with next params:
 
-        PaReq - с значением paymentResponse.card3ds.PaReq
-        MD - с значением paymentResponse.card3ds.MD
-        TermUrl - URL обработчика, на вашем сайте. На него будет возвращён пользователь после прохождения 3DS авторизации       
-                
-        Для проверки прохождения 3DS авторизации следует вызвать POST запросом API https://partner.rficb.ru/alba/ack3ds/ , передав туда:
+        PaReq - with paymentResponse.card3ds.PaReq value
+        MD - with paymentResponse.card3ds.MD value
+        TermUrl - your site handler URL, customer will be redirected onto it after 3DS authorization
+        
+        To check 3DS authorization result you need to send POST request to https://partner.rficb.ru/alba/ack3ds/ with next params:
         service_id;
-        tid или order_id;
-        emitent_response - данные, пришедшие от банка-эмитента в виде JSON-encoded словаря (Содержатся в paymentResponse.card3ds)
-        check - подпись запроса
-        version=2.0 - версия протокола
+        tid or order_id;
+        emitent_response - card issuer response data in JSON-encoded format (can be obtained from paymentResponse.card3ds)
+        check - electronic sign for request
+        version=2.0 - API version
                 
 
-#### Пример для подписи запроса:
+#### Electroic sign example
 
 ```objective-c
-        NSString * check = [RFISigner sign:@"строка для подписи"
-                                       url:@"URL куда отправляем запрос"
+        NSString * check = [RFISigner sign:@"string to sign"
+                                       url:@"requested URL"
                              requestParams: @{}
                                  secretKey: payService.secret];
 ```
 
-Также есть возможность воспользоваться готовым termUrl, для этого достаточно указать:
+You can also use our standard TermUrl with providing params:
 
-        https://secure.rficb.ru/acquire?sid=<ID-Сервиса>&oid=<ID-Транзакции>&op=pay
+        https://secure.rficb.ru/acquire?sid=<service_id>&oid=<transaction_id>&op=pay
                 
-Или в случае тестовой оплаты:
+In case of test payment:
 
-        https://test.rficb.ru/acquire?sid=<ID-Сервиса>&oid=<ID-Транзакции>&op=pay
+        https://test.rficb.ru/acquire?sid=<service_id>&oid=<transaction_id>&op=pay
           
-Получение информации о транзакции. Метод **[RFIPayService transactionDetails: successBlock: failure:]** выполняется асинхронно. В случае, если ответ от Банка получен, выполняется successBlock, в противном - failure:
+Get transaction info. Method **[RFIPayService transactionDetails: successBlock: failure:]** is async. In case of successful response from bank successBlock is called, otherwise failure is called:
 
 ```objective-c
  	[payService transactionDetails: transactionId successBlock:^(RFIPaymentResponse *response) {
- 		// обработка ответа от Банка
+ 		// handling bank response
 	} failure:^(NSDictionary *error) {
-		// обработка ошибки
+		// handling error response
 	}];
 ```
 
-Статус инициализации транзакции. success - успех
+Transaction init state success:
 
 ```objective-c
         NSString * transactionStatus = transactionDetails.status;
 ```
 
-Статус проведения платежа. open, error, payed, success
+Payment state open, error, payed, success
 
 ```objective-c
         NSString * transactionPayStatus = transactionDetails.transactionStatus;
 ```
 
-#### Метод проверки статуса 3DS
+#### 3DS state check method
 
 ```objective-c
 - (void) check3DSStatusForService: (NSString *) serviceId
@@ -219,7 +217,7 @@
                      andSecretKey: (NSString *) secretKey
       {
     
-      NSString *checkURL = @"https://partner.rficb.ru/alba/ack3ds";
+      NSString *checkURL = @"https://pay.paymentnepal.com/alba/ack3ds";
     
       NSError *error;
       NSData *jsonData = [NSJSONSerialization dataWithJSONObject:emitentResponse
@@ -245,14 +243,14 @@
 }
 ```
 
-#### Получение статуса транзакции:
+#### Get transaction state:
 
 ```objective-c
        TransactionDetails details = service.transactionDetails(response.getSessionKey());
        if (details.getStatus() == TransactionStatus.PAYED || details.getStatus() == TransactionStatus.SUCCESS) {
-          // транзакция оплачена
+          // successfully payed
        } else {
-          // транзакция не оплачена
+          // not payed
        }
 ```
 

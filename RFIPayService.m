@@ -64,14 +64,13 @@ static NSString *version = @"2.1";
 }
 
 
-// TODO надо ли дедать?
 + (NSString *) generateUrlForRequest: (RFIPaymentRequest *)paymentRequest {
     
     return @"";
 }
 
 //
-// Иницировать платеж
+// Init payment
 //
 
 - (void)paymentInit:(RFIPaymentRequest *)paymentRequest
@@ -99,7 +98,7 @@ static NSString *version = @"2.1";
 }
 
 //
-// Иницировать платеж с параметрами
+// Init payment with params
 //
 
 - (void)paymentInitWithRequest:(RFIPaymentRequest *)paymentRequest
@@ -163,7 +162,7 @@ static NSString *version = @"2.1";
         requestMutableParams[@"invoice_data"] = [paymentRequest.invoiceData parameters];
     }
     
-    // Инициализация платежа
+    // Init payment
     
     NSDictionary *requestParams = [requestMutableParams copy];
     
@@ -185,7 +184,7 @@ static NSString *version = @"2.1";
 }
 
 //
-// Получить токен карты
+// Get card token
 //
 
 - (void)createCardToken:(RFICardTokenRequest *)request
@@ -225,7 +224,7 @@ static NSString *version = @"2.1";
 }
 
 //
-// Получить детали транзакции
+// Get transaction details
 //
 
 - (void)transactionDetailsWithSessionKey:(NSString *)sessionKey
@@ -248,7 +247,7 @@ static NSString *version = @"2.1";
     } failure:failure];
 }
 
-// Отмена рекуррентного платежа
+// Cancel recurrent payment
 - (void)cancelRecurrentPaymentWithOrderId:(NSString *)orderId
                              successBlock:(cancelationSuccessBlock)success
                                   failure:(errorBlock)failure {

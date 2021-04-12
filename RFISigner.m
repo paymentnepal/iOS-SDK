@@ -13,7 +13,7 @@
 
 + (NSString *) escapeString: (NSString *) escString {
     
-    //При наличии в строке переменной JSON, надо дополнительно экранировать спецсимволы
+    //In case of JSON variable inside the string need to quote special symbols
     escString = [escString stringByReplacingOccurrencesOfString:@"/" withString:@"%2F"];
     escString = [escString stringByReplacingOccurrencesOfString:@"+" withString:@"%2B"];
     escString = [escString stringByReplacingOccurrencesOfString:@"=" withString:@"%3D"];
@@ -25,7 +25,7 @@
 
 + (NSString *) sign: (NSString *)method url: (NSString *)url requestParams: (NSDictionary *)requestParams secretKey: (NSString *) secretKey {
     
-    // Сортировка словаря по ключу
+    // Sort dict by key
     NSArray * sortedKeysArray = [[requestParams allKeys] sortedArrayUsingSelector: @selector(caseInsensitiveCompare:)];
 
     NSString * urlParametrs = @"";
@@ -48,7 +48,7 @@
     }
     
 
-    // Получение строки для хеширования
+    // Get string to hash
     NSString * data = [method uppercaseString];
     data = [data stringByAppendingFormat: @"%@%@%@%@%@%@", @"\n", [uri host], @"\n", [uri path], @"\n", urlParametrs];
     

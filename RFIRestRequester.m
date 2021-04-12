@@ -31,7 +31,7 @@
     [urlRequest setHTTPMethod:method];
     [urlRequest setValue:@"UTF-8" forHTTPHeaderField:@"content-charset"];
     
-    // перебираем все параметры запроса
+    // sort request params
     for (id key in requestParams) {
         id object = [requestParams objectForKey:key];
         
@@ -47,7 +47,7 @@
     }
     
     if (secret) {
-        // Формирование подписи запроса
+        // Create electronic sign for request
         NSString * check = [RFISigner sign :method url:urlAsString requestParams:requestParams secretKey:secret];
         
         urlParametrs = [urlParametrs stringByAppendingFormat:@"&check=%@", check];
@@ -57,7 +57,7 @@
     if ([[method uppercaseString] isEqualToString: @"GET"]) {
         urlParametrs = [@"?" stringByAppendingString: urlParametrs];
     } else {
-        // Добавление POST к запросу
+        // Add POST to request
         [urlRequest setHTTPBody:[urlParametrs dataUsingEncoding:NSUTF8StringEncoding]];
     }
     

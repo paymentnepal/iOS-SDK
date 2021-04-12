@@ -7,7 +7,7 @@
 //
 
 #import "RFIHelpers.h"
-#import <CommonCrypto/CommonDigest.h>  // Необходимо для доступа к CC_MD5
+#import <CommonCrypto/CommonDigest.h>  // Required to access CC_MD5
 
 @implementation NSString (MyExtensions)
 - (NSString *) md5
