@@ -1,10 +1,3 @@
-//
-//  RFIPayService.h
-//  RFI Demo
-//
-//  Created by Ivan Streltcov on 07.09.16.
-//  Copyright © 2016 RFI BANK. All rights reserved.
-//
 
 #import <Foundation/Foundation.h>
 #import "RFIPay.h"
@@ -15,19 +8,19 @@
 
 @class RFITransactionDetails;
 
-typedef void(^serviceSuccessBlock)(RFIPaymentResponse *response);
-typedef void(^cardTokenSuccessBlock)(RFICardTokenResponse *response);
-typedef void(^transactionSuccessBlock)(RFITransactionDetails *response);
+typedef void(^serviceSuccessBlock)(GPSPaymentResponse *response);
+typedef void(^cardTokenSuccessBlock)(GPSCardTokenResponse *response);
+typedef void(^transactionSuccessBlock)(GPSTransactionDetails *response);
 typedef void(^cancelationSuccessBlock)(void);
 typedef void(^errorBlock)(NSDictionary *error);
 
-@interface RFIPayService : NSObject
+@interface GPSPayService : NSObject
 
 - (instancetype)initWithServiceId:(NSString *)serviceId andSecret:(NSString *)secret;
 - (instancetype)initWithServiceId:(NSString *)serviceId andKey:(NSString *)key;
 
 // Init payment
-- (void)paymentInit:(RFIPaymentRequest *)paymentRequest
+- (void)paymentInit:(GPSPaymentRequest *)paymentRequest
        successBlock:(serviceSuccessBlock)success
             failure:(errorBlock)failure;
 
@@ -41,7 +34,7 @@ typedef void(^errorBlock)(NSDictionary *error);
 //- (id) refundResponse: (RFIRefundRequest *)refundRequest;
 
 // Create payment token
-- (void)createCardToken:(RFICardTokenRequest *)request
+- (void)createCardToken:(GPSCardTokenRequest *)request
                  isTest:(BOOL)isTest
            successBlock:(cardTokenSuccessBlock)success
                 failure:(errorBlock)failure;
@@ -53,7 +46,7 @@ typedef void(^errorBlock)(NSDictionary *error);
 //- (NSString *) generateCheckOldVersion;
 
 // Generate request string to gateway server from params provided
-+ (NSString *) generateUrlForRequest: (RFIPaymentRequest *)paymentRequest;
++ (NSString *) generateUrlForRequest: (GPSPaymentRequest *)paymentRequest;
 
 // Cancel recurrent payment
 - (void)cancelRecurrentPaymentWithOrderId:(NSString *)orderId

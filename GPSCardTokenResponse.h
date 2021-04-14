@@ -1,15 +1,8 @@
-//
-//  RFICardTokenResponse.h
-//  RFI Demo
-//
-//  Created by Ivan Streltcov on 17.10.16.
-//  Copyright © 2016 RFI BANK. All rights reserved.
-//
 
 #import <Foundation/Foundation.h>
-#import "RFICardTokenRequest.h"
+#import "GPSCardTokenRequest.h"
 
-@interface RFICardTokenResponse : NSObject
+@interface GPSCardTokenResponse : NSObject
 {
     BOOL * _hasErrors;
     NSString * _errorDetails;

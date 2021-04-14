@@ -1,15 +1,8 @@
-//
-//  RFIRestRequester.m
-//  RFI Demo
-//
-//  Created by Ivan Streltcov on 08.09.16.
-//  Copyright © 2016 RFI BANK. All rights reserved.
-//
 
-#import "RFIRestRequester.h"
-#import "RFISigner.h"
+#import "GPSRestRequester.h"
+#import "GPSSigner.h"
 
-@implementation RFIRestRequester
+@implementation GPSRestRequester
 
 + (void)request:(NSString *)url
       andMethod:(NSString *)method
@@ -41,14 +34,14 @@
         
         NSString * escapedString = [object stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLHostAllowedCharacterSet]];
         
-        escapedString = [RFISigner escapeString:escapedString];
+        escapedString = [GPSSigner escapeString:escapedString];
         
         urlParametrs = [urlParametrs stringByAppendingFormat: @"%@=%@", key, escapedString];
     }
     
     if (secret) {
         // Create electronic sign for request
-        NSString * check = [RFISigner sign :method url:urlAsString requestParams:requestParams secretKey:secret];
+        NSString * check = [GPSSigner sign :method url:urlAsString requestParams:requestParams secretKey:secret];
         
         urlParametrs = [urlParametrs stringByAppendingFormat:@"&check=%@", check];
     }
@@ -64,7 +57,7 @@
     NSURLSessionDataTask *task = [[NSURLSession sharedSession] dataTaskWithRequest:urlRequest completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
         if (error) {
             if (failure) {
-                NSDictionary * errorDictionary = @{@"status": @"error", @"message" : [NSString stringWithFormat: @"HTTP error happened = %@", error]};
+                NSDictionary * errorDictionary = @{@"status": @"error", @"message" : [NSString stringWithFormat: @"HTTP error occured = %@", error]};
                 dispatch_async(dispatch_get_main_queue(), ^{
                     failure(errorDictionary);
                 });

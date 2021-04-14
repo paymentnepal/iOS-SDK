@@ -1,14 +1,7 @@
-//
-//  RFICard3DS.m
-//  RFI Demo
-//
-//  Created by Ivan Streltcov on 17.10.16.
-//  Copyright © 2016 RFI BANK. All rights reserved.
-//
 
-#import "RFICardThreeDs.h"
+#import "GPSCardThreeDs.h"
 
-@implementation RFICardThreeDs
+@implementation GPSCardThreeDs
 
 -(id) initWithParams: (NSDictionary *)params {
     

@@ -1,14 +1,7 @@
-//
-//  RFICardTokenRequest.m
-//  RFI Demo
-//
-//  Created by Ivan Streltcov on 16.10.16.
-//  Copyright © 2016 RFI BANK. All rights reserved.
-//
 
-#import "RFICardTokenRequest.h"
+#import "GPSCardTokenRequest.h"
 
-@implementation RFICardTokenRequest
+@implementation GPSCardTokenRequest
 
 - (id)initWithServiceId: (NSString *)serviceId andCard: (NSString *)card andExpMonth: (NSString *)expMonth andExpYear: (NSString *)expYear andCvc: (NSString *)cvc andCardHolder: (NSString *)cardHolder {
     

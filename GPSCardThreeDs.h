@@ -1,14 +1,7 @@
-//
-//  RFICard3DS.h
-//  RFI Demo
-//
-//  Created by Ivan Streltcov on 17.10.16.
-//  Copyright © 2016 RFI BANK. All rights reserved.
-//
 
 #import <Foundation/Foundation.h>
 
-@interface RFICardThreeDs : NSObject
+@interface GPSCardThreeDs : NSObject
 {
     NSString * _ACSUrl;
     NSString * _MD;

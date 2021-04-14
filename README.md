@@ -1,4 +1,4 @@
-API client for Alba
+API client for Paymentnepal
 =============
 
 #### Init service
@@ -8,31 +8,31 @@ Service can be inited two ways:
 * providing serviceId and secret:
 
 ```objective-c
-	RFIPayService * payService = [[RFIPayService alloc] initWithServiceId:@"12345" andSecret:@"abcd1234"];
+	GPSPayService * payService = [[GPSPayService alloc] initWithServiceId:@"12345" andSecret:@"abcd1234"];
 ```
 
 * providing  serviceId and key:
 
 ```objective-c
-	RFIPayService * payService = [[RFIPayService alloc] initWithServiceId:@"12345" andKey:@"abcd1234"];
+	GPSPayService * payService = [[GPSPayService alloc] initWithServiceId:@"12345" andKey:@"abcd1234"];
 ```
 
-To make payment with bank card a toked containing card data must be generated. This token will be used to init payment. Data needed for token creating is provided in RFICardTokenRequest.
+To make payment with bank card a toked containing card data must be generated. This token will be used to init payment. Data needed for token creating is provided in GPSCardTokenRequest.
 If card is involved into 3-D secure, then paymentResponse.card3ds will contain data for POST request to card issuer.
 
 #### Getting card token
 
-Init RFICardTokenRequest:
+Init GPSCardTokenRequest:
 
 ```objective-c
-   	RFICardTokenRequest * cardTokenRequest = [[RFICardTokenRequest alloc] initWithServiceId:payService.serviceId andCard:@"<card number>" andExpMonth:@"<exp date month>" andExpYear:@"<exp date year>" andCvc:@"<CVC>" andCardHolder:@"<cardholder>"];
-        RFICardTokenResponse * cardTokenResponse = [payService createCardToken:cardTokenRequest isTest:YES];
+   	GPSCardTokenRequest * cardTokenRequest = [[GPSCardTokenRequest alloc] initWithServiceId:payService.serviceId andCard:@"<card number>" andExpMonth:@"<exp date month>" andExpYear:@"<exp date year>" andCvc:@"<CVC>" andCardHolder:@"<cardholder>"];
+        GPSCardTokenResponse * cardTokenResponse = [payService createCardToken:cardTokenRequest isTest:YES];
 ```
 
-Request card token.Method **[RFIPayService createCardToken: isTest: successBlock: failure:]** is async. In case of successful response from bank successBlock is called, otherwise failure is called:
+Request card token.Method **[GPSPayService createCardToken: isTest: successBlock: failure:]** is async. In case of successful response from bank successBlock is called, otherwise failure is called:
 
 ```objective-c
-	[payService createCardToken:cardTokenRequest isTest:YES successBlock:^(RFICardTokenResponse *response) {
+	[payService createCardToken:cardTokenRequest isTest:YES successBlock:^(GPSCardTokenResponse *response) {
 		// handling bank response
 	} failure:^(NSDictionary *error) {
   		// handling error response
@@ -43,35 +43,35 @@ If cardTokenResponse.hasErrors == NO, init transaction:
 
 ```objective-c
         // Generate payment request
-        RFIPaymentRequest * paymentRequest = [[RFIPaymentRequest alloc] init];
+        GPSPaymentRequest * paymentRequest = [[GPSPaymentRequest alloc] init];
 
         // Собираем необходимые параметры для платежа
         paymentRequest.paymentType = @"spg_test";     // Possible values: mc, qiwi, spg, spg_test
         paymentRequest.email = @"<Email>";            // May be required depending on service settings
-        paymentRequest.cost = @"<Сумма>";             // int
-        paymentRequest.name = @"<Название платежа>";        
-        paymentRequest.phone = @"<Номер телефона>";   // Required if paymentType in (mc, qiwi)
-        paymentRequest.orderId = @"<Номер заказа>";   // orderId must be unique. Additional field
+        paymentRequest.cost = @"<amount>";             // int
+        paymentRequest.name = @"<payment_name>";        
+        paymentRequest.phone = @"<customer_phone>";   // Required if paymentType in (mc, qiwi)
+        paymentRequest.orderId = @"<unique order_id>";   // orderId must be unique. Additional field
         paymentRequest.background = @"1";             // Always 1
         paymentRequest.cardToken = cardTokenResponse.token;       // If paymentType is spg or spg_test        
-        paymentRequest.comment = @"<Комментарий>";    // Additional field
+        paymentRequest.comment = @"<payment_comment>";    // Additional field
 ```
 
-In case of recurrent payment additional params described in RFIReccurentParams must be provided in paymentRequest. Recurrent payment consists of two operations:
+In case of recurrent payment additional params described in GPSReccurentParams must be provided in paymentRequest. Recurrent payment consists of two operations:
 	
 * Payment with registering recurrent payment (for the first recurrent payment)
 
 ```objective-c
 	NSString *url = @"<Terms and rules of payment service link>";
 	NSString *comment = @"<Text description of purpose of recurrent payment registration>";
-	RFIReccurentParams *reccurentParams = [RFIReccurentParams firstWithUrl:url andComment:comment];
+	GPSReccurentParams *reccurentParams = [GPSReccurentParams firstWithUrl:url andComment:comment];
 ```
 
 * Recurrent payment by request (second and further payments)
 
 ```objective-c
 	NSString *reccurentOrderId = @"<order_id>";
-	RFIReccurentParams *reccurentParams = [RFIReccurentParams nextWithOrderId:reccurentOrderId];
+	GPSReccurentParams *reccurentParams = [GPSReccurentParams nextWithOrderId:reccurentOrderId];
 ```
 
 After that you must provide recurrent payment params into payment request:
@@ -90,13 +90,13 @@ To cancel recurrent payments:
  	}];
 ```
 
-If you need to add invoice data for fiscalization you'll need to implement RFIInvoiceData object and provide it into paymentRequest:
+If you need to add invoice data for fiscalization you'll need to implement GPSInvoiceData object and provide it into paymentRequest:
 
 ```objective-c
- 	RFIInvoiceData *invoiceData = [RFIInvoiceData new];
+ 	GPSInvoiceData *invoiceData = [GPSInvoiceData new];
  	invoiceData.vatTotal = @(<amount>);
  	
- 	RFIInvoiceItem *firstItem = [RFIInvoiceItem new];
+ 	GPSInvoiceItem *firstItem = [GPSInvoiceItem new];
  	firstItem.code = @"<item code>";
  	firstItem.name = @"<item name>";
  	firstItem.unit = @"<unit of measurment>";
@@ -108,7 +108,7 @@ If you need to add invoice data for fiscalization you'll need to implement RFIIn
  	firstItem.discountRate = @(<Discount (percent)>);
  	firstItem.discountAmount = @(<Discount total>);
 
- 	RFIInvoiceItem *secondItem = [RFIInvoiceItem new];
+ 	GPSInvoiceItem *secondItem = [GPSInvoiceItem new];
  	secondItem.code = @"<item code>";
  	...
  
@@ -119,10 +119,10 @@ If you need to add invoice data for fiscalization you'll need to implement RFIIn
 
 #### Init payment request to bank
 
-Method **[RFIPayService paymentInit: successBlock: failure:]** is async. In case of successful response from bank successBlock is called, otherwise failure is called:
+Method **[GPSPayService paymentInit: successBlock: failure:]** is async. In case of successful response from bank successBlock is called, otherwise failure is called:
 
 ```objective-c
-   	[payService paymentInit:paymentRequest successBlock:^(RFIPaymentResponse *response) {
+   	[payService paymentInit:paymentRequest successBlock:^(GPSPaymentResponse *response) {
    		// handling bank response
 	} failure:^(NSDictionary *error) {
 		// handling error response
@@ -172,7 +172,7 @@ If 3-D secure id needed you need to send POST request to paymentResponse.card3ds
 #### Electroic sign example
 
 ```objective-c
-        NSString * check = [RFISigner sign:@"string to sign"
+        NSString * check = [GPSSigner sign:@"string to sign"
                                        url:@"requested URL"
                              requestParams: @{}
                                  secretKey: payService.secret];
@@ -186,10 +186,10 @@ In case of test payment:
 
         https://test.rficb.ru/acquire?sid=<service_id>&oid=<transaction_id>&op=pay
           
-Get transaction info. Method **[RFIPayService transactionDetails: successBlock: failure:]** is async. In case of successful response from bank successBlock is called, otherwise failure is called:
+Get transaction info. Method **[GPSPayService transactionDetails: successBlock: failure:]** is async. In case of successful response from bank successBlock is called, otherwise failure is called:
 
 ```objective-c
- 	[payService transactionDetails: transactionId successBlock:^(RFIPaymentResponse *response) {
+ 	[payService transactionDetails: transactionId successBlock:^(GPSPaymentResponse *response) {
  		// handling bank response
 	} failure:^(NSDictionary *error) {
 		// handling error response
@@ -235,7 +235,7 @@ Payment state open, error, payed, success
                                                                                          @"version": @"2.0"
                                                                                          }];
     
-      RFIRestRequester *requester = [[RFIRestRequester alloc] init];
+      GPSRestRequester *requester = [[GPSRestRequester alloc] init];
     
       [requester request:checkURL andMethod:@"post" andParams: paymentParams andSecret:secretKey];
 

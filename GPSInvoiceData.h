@@ -1,14 +1,7 @@
-//
-//  RFIInvoiceData.h
-//  test
-//
-//  Created by Alexander Nazarov on 9/6/18.
-//  Copyright © 2018 forkode. All rights reserved.
-//
 
 #import <Foundation/Foundation.h>
 
-@interface RFIInvoiceItem : NSObject
+@interface GPSInvoiceItem : NSObject
 
 @property (nonatomic, copy) NSString *code;
 @property (nonatomic, copy) NSString *name;
@@ -23,15 +16,15 @@
 
 @end
 
-@interface RFIInvoiceData : NSObject
+@interface GPSInvoiceData : NSObject
 
 @property (nonatomic, strong) NSNumber *vatTotal;
 @property (nonatomic, strong) NSNumber *discountTotal;
-@property (nonatomic, strong) NSArray<RFIInvoiceItem *> *items;
+@property (nonatomic, strong) NSArray<GPSInvoiceItem *> *items;
 
 + (instancetype)invoiceDataWithVatTotal:(NSNumber *)vatTotal
                           discountTotal:(NSNumber *)discountTotal
-                           invoiceItems:(NSArray<RFIInvoiceItem *> *)items;
+                           invoiceItems:(NSArray<GPSInvoiceItem *> *)items;
 
 - (NSString *)parameters;
 

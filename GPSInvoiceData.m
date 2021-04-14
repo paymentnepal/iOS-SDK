@@ -1,24 +1,17 @@
-//
-//  RFIInvoiceData.m
-//  test
-//
-//  Created by Alexander Nazarov on 9/6/18.
-//  Copyright © 2018 forkode. All rights reserved.
-//
 
-#import "RFIInvoiceData.h"
+#import "GPSInvoiceData.h"
 
-@implementation RFIInvoiceItem
+@implementation GPSInvoiceItem
 
 @end
 
-@implementation RFIInvoiceData
+@implementation GPSInvoiceData
 
 + (instancetype)invoiceDataWithVatTotal:(NSNumber *)vatTotal
                           discountTotal:(NSNumber *)discountTotal
-                           invoiceItems:(NSArray<RFIInvoiceItem *> *)items
+                           invoiceItems:(NSArray<GPSInvoiceItem *> *)items
 {
-    RFIInvoiceData *invoiceData = [RFIInvoiceData new];
+    GPSInvoiceData *invoiceData = [GPSInvoiceData new];
     
     invoiceData.vatTotal = vatTotal;
     invoiceData.discountTotal = discountTotal;

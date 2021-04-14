@@ -1,24 +1,17 @@
-//
-//  RFIPayService.m
-//  RFI Demo
-//
-//  Created by Ivan Streltcov on 07.09.16.
-//  Copyright © 2016 RFI BANK. All rights reserved.
-//
 
-#import "RFIPayService.h"
-#import "RFIPaymentResponse.h"
-#import "RFIHelpers.h"
-#import "RFISigner.h"
-#import "RFIRestRequester.h"
-#import "RFIConnectionProfile.h"
-#import "RFITransactionDetails.h"
-#import "RFIReccurentParams.h"
-#import "RFIInvoiceData.h"
+#import "GPSPayService.h"
+#import "GPSPaymentResponse.h"
+#import "GPSHelpers.h"
+#import "GPSSigner.h"
+#import "GPSRestRequester.h"
+#import "GPSConnectionProfile.h"
+#import "GPSTransactionDetails.h"
+#import "GPSReccurentParams.h"
+#import "GPSInvoiceData.h"
 
 static NSString *version = @"2.1";
 
-@interface RFIPayService ()
+@interface GPSPayService ()
 
 @property (nonatomic, copy) NSString *key;
 @property (nonatomic, copy) NSString *secret;
@@ -26,7 +19,7 @@ static NSString *version = @"2.1";
 
 @end
 
-@implementation RFIPayService
+@implementation GPSPayService
 
 // Version 2.0
 - (NSString *) generateCheck: (NSDictionary *)requestParams {
@@ -73,7 +66,7 @@ static NSString *version = @"2.1";
 // Init payment
 //
 
-- (void)paymentInit:(RFIPaymentRequest *)paymentRequest
+- (void)paymentInit:(GPSPaymentRequest *)paymentRequest
        successBlock:(serviceSuccessBlock)success
             failure:(errorBlock)failure {
     
@@ -85,7 +78,7 @@ static NSString *version = @"2.1";
         params[@"service_id"] = self.serviceId;
     } else {
         if (failure) {
-            NSString *errorMessage = @"RFIPayService should be initialized by key or secret parameter.";
+            NSString *errorMessage = @"GPSPayService should be initialized by key or secret parameter.";
             failure(@{@"Error": errorMessage});
         }
         return;
@@ -101,7 +94,7 @@ static NSString *version = @"2.1";
 // Init payment with params
 //
 
-- (void)paymentInitWithRequest:(RFIPaymentRequest *)paymentRequest
+- (void)paymentInitWithRequest:(GPSPaymentRequest *)paymentRequest
                      andParams:(NSDictionary *)params
                   successBlock:(serviceSuccessBlock)success
                        failure:(errorBlock)failure
@@ -140,7 +133,7 @@ static NSString *version = @"2.1";
     }
     
     if (paymentRequest.reccurentParams) {
-        if (paymentRequest.reccurentParams.type == RFIReccurentTypeFirst) {
+        if (paymentRequest.reccurentParams.type == GPSReccurentTypeFirst) {
             requestMutableParams[@"recurrent_type"] = @"first";
             requestMutableParams[@"recurrent_comment"] = paymentRequest.reccurentParams.comment;
             requestMutableParams[@"recurrent_url"] = paymentRequest.reccurentParams.url;
@@ -166,12 +159,12 @@ static NSString *version = @"2.1";
     
     NSDictionary *requestParams = [requestMutableParams copy];
     
-    NSString *hostUrl =  [RFIConnectionProfile baseUrl];
+    NSString *hostUrl =  [GPSConnectionProfile baseUrl];
     NSString *url = [hostUrl stringByAppendingString:@"input"];
     
-    [RFIRestRequester request:url andMethod:@"POST" andParams:requestParams andSecret:self.secret successBlock:^(NSDictionary *result) {
+    [GPSRestRequester request:url andMethod:@"POST" andParams:requestParams andSecret:self.secret successBlock:^(NSDictionary *result) {
         if (success) {
-            RFIPaymentResponse * paymentResponse = [[RFIPaymentResponse alloc] initWithRequest:result];
+            GPSPaymentResponse * paymentResponse = [[GPSPaymentResponse alloc] initWithRequest:result];
             if (paymentResponse.hasErrors) {
                 if (failure) {
                     failure(@{@"Error": result});
@@ -187,7 +180,7 @@ static NSString *version = @"2.1";
 // Get card token
 //
 
-- (void)createCardToken:(RFICardTokenRequest *)request
+- (void)createCardToken:(GPSCardTokenRequest *)request
                  isTest:(BOOL)isTest
            successBlock:(cardTokenSuccessBlock)success
                 failure:(errorBlock)failure {
@@ -202,16 +195,16 @@ static NSString *version = @"2.1";
     
     NSString *hostUrl = @"";
     if(isTest) {
-        hostUrl = [hostUrl stringByAppendingString:[RFIConnectionProfile cardTokenTestUrl]];
+        hostUrl = [hostUrl stringByAppendingString:[GPSConnectionProfile cardTokenTestUrl]];
     } else {
-        hostUrl = [hostUrl stringByAppendingString:[RFIConnectionProfile cardTokenUrl]];
+        hostUrl = [hostUrl stringByAppendingString:[GPSConnectionProfile cardTokenUrl]];
     }
     
     NSString *url = [hostUrl stringByAppendingString:@"create"];
     
-    [RFIRestRequester request:url andMethod:@"POST" andParams:requestParams andSecret:self.secret successBlock:^(NSDictionary *result) {
+    [GPSRestRequester request:url andMethod:@"POST" andParams:requestParams andSecret:self.secret successBlock:^(NSDictionary *result) {
         if (success) {
-            RFICardTokenResponse * cardTokenResponse = [[RFICardTokenResponse alloc] initWithRequest:result];
+            GPSCardTokenResponse * cardTokenResponse = [[GPSCardTokenResponse alloc] initWithRequest:result];
             if (cardTokenResponse.hasErrors) {
                 if (failure) {
                     failure(cardTokenResponse.errors);
@@ -236,12 +229,12 @@ static NSString *version = @"2.1";
                                     @"session_key": sessionKey
                                     };
     
-    NSString *hostUrl = [RFIConnectionProfile baseUrl];
+    NSString *hostUrl = [GPSConnectionProfile baseUrl];
     NSString *url = [hostUrl stringByAppendingString:@"details"];
     
-    [RFIRestRequester request:url andMethod:@"POST" andParams:requestParams andSecret:nil successBlock:^(NSDictionary *result) {
+    [GPSRestRequester request:url andMethod:@"POST" andParams:requestParams andSecret:nil successBlock:^(NSDictionary *result) {
         if (success) {
-            RFITransactionDetails *transactionDetails = [[RFITransactionDetails alloc] initWithReponse:result];
+            GPSTransactionDetails *transactionDetails = [[GPSTransactionDetails alloc] initWithReponse:result];
             success(transactionDetails);
         }
     } failure:failure];
@@ -263,9 +256,9 @@ static NSString *version = @"2.1";
         params[@"service_id"] = self.serviceId;
     }
     
-    NSString *url = [[RFIConnectionProfile baseUrl] stringByAppendingString:@"recurrent_change/"];
+    NSString *url = [[GPSConnectionProfile baseUrl] stringByAppendingString:@"recurrent_change/"];
     
-    [RFIRestRequester request:url andMethod:@"POST" andParams:[params copy] andSecret:self.secret successBlock:^(NSDictionary *result) {
+    [GPSRestRequester request:url andMethod:@"POST" andParams:[params copy] andSecret:self.secret successBlock:^(NSDictionary *result) {
         NSString *status = result[@"status"];
         if ([status isEqualToString:@"success"]) {
             if (success) {

@@ -1,15 +1,8 @@
-//
-//  RFISigner.m
-//  RFI Demo
-//
-//  Created by Ivan Streltcov on 14.10.16.
-//  Copyright © 2016 RFI BANK. All rights reserved.
-//
 
-#import "RFISigner.h"
+#import "GPSSigner.h"
 #import <CommonCrypto/CommonHMAC.h>
 
-@implementation RFISigner
+@implementation GPSSigner
 
 + (NSString *) escapeString: (NSString *) escString {
     

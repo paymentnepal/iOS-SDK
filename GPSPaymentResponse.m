@@ -1,14 +1,7 @@
-//
-//  RFIPaymentResponse.m
-//  RFI Demo
-//
-//  Created by Ivan Streltcov on 07.09.16.
-//  Copyright © 2016 RFI BANK. All rights reserved.
-//
 
-#import "RFIPaymentResponse.h"
+#import "GPSPaymentResponse.h"
 
-@implementation RFIPaymentResponse
+@implementation GPSPaymentResponse
 
 - (id)initWithRequest:(NSDictionary *)paymentRequest {
     self = [super init];
@@ -17,19 +10,19 @@
 
         _status = [paymentRequest objectForKey:@"status"];
         
-        //если получили ошибки
+        //in case of error
         if ([_status isEqualToString:@"error"]) {
             _hasErrors = (BOOL *) YES;
             _message = [paymentRequest objectForKey:@"message"];
             _errors = [paymentRequest objectForKey:@"errors"];
         }
         
-        //если успех
+        //in case of success
         if ([_status isEqualToString:@"success"]) {
             
             if([paymentRequest objectForKey:@"3ds"]) {
 
-                RFICardThreeDs * threeDS = [[RFICardThreeDs alloc] initWithParams: [paymentRequest objectForKey:@"3ds"]];
+                GPSCardThreeDs * threeDS = [[GPSCardThreeDs alloc] initWithParams: [paymentRequest objectForKey:@"3ds"]];
                 
                 _card3ds = threeDS;
             }

@@ -1,17 +1,10 @@
-//
-//  RFIPaymentRequest.h
-//  RFI Demo
-//
-//  Created by Ivan Streltcov on 07.09.16.
-//  Copyright © 2016 RFI BANK. All rights reserved.
-//
 
 #import <Foundation/Foundation.h>
 
-@class RFIReccurentParams;
-@class RFIInvoiceData;
+@class GPSReccurentParams;
+@class GPSInvoiceData;
 
-@interface RFIPaymentRequest : NSObject {
+@interface GPSPaymentRequest : NSObject {
     NSString * _paymentType;
     NSMutableDictionary * params;
     
@@ -45,7 +38,7 @@
 @property (nonatomic, copy) NSString * commissionMode;
 @property (nonatomic, copy) NSString * test;
 
-@property (nonatomic, strong) RFIReccurentParams *reccurentParams;
-@property (nonatomic, strong) RFIInvoiceData *invoiceData;
+@property (nonatomic, strong) GPSReccurentParams *reccurentParams;
+@property (nonatomic, strong) GPSInvoiceData *invoiceData;
 
 @end

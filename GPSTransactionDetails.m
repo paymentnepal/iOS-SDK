@@ -1,14 +1,7 @@
-//
-//  RFITransactionDetails.m
-//  RFI Demo
-//
-//  Created by Ivan Streltcov on 17.10.16.
-//  Copyright © 2016 RFI BANK. All rights reserved.
-//
 
-#import "RFITransactionDetails.h"
+#import "GPSTransactionDetails.h"
 
-@implementation RFITransactionDetails
+@implementation GPSTransactionDetails
 
 -(id)initWithReponse: (NSDictionary *)response {
     

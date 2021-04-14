@@ -1,18 +1,11 @@
-//
-//  RFIConnectionProfile.m
-//  RFI Demo
-//
-//  Created by Ivan Streltcov on 16.10.16.
-//  Copyright © 2016 RFI BANK. All rights reserved.
-//
 
-#import "RFIConnectionProfile.h"
+#import "GPSConnectionProfile.h"
 
 static NSString * const baseUrl = @"https://pay.paymentnepal.com/alba/";
 static NSString * const cardTokenUrl = @"https://secure.paymentnepal.com/cardtoken/";
-// static NSString * const cardTokenTestUrl = @"https://test.rficb.ru/cardtoken/";
+// static NSString * const cardTokenTestUrl = @"https://secure.paymentnepal.com/cardtoken/";
 
-@implementation RFIConnectionProfile
+@implementation GPSConnectionProfile
 
 + (NSString *)baseUrl {
     return baseUrl;

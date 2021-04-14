@@ -6,7 +6,7 @@
 //  Copyright © 2016 RFI BANK. All rights reserved.
 //
 
-#import "RFIHelpers.h"
+#import "GPSHelpers.h"
 #import <CommonCrypto/CommonDigest.h>  // Required to access CC_MD5
 
 @implementation NSString (MyExtensions)
@@ -40,6 +40,6 @@
 }
 @end
 
-@implementation RFIHelpers
+@implementation GPSHelpers
 
 @end

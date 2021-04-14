@@ -1,19 +1,13 @@
-//
-//  RFIReccurentParams.m
-//  
-//
-//  Created by Alexander Nazarov on 8/9/18.
-//
 
-#import "RFIReccurentParams.h"
+#import "GPSReccurentParams.h"
 
-@implementation RFIReccurentParams
+@implementation GPSReccurentParams
 
-- (instancetype)initWithType:(RFIReccurentType)type
+- (instancetype)initWithType:(GPSReccurentType)type
                      comment:(NSString *)comment
                          url:(NSString *)url
                      orderId:(NSString *)orderId
-                  periodType:(RFIReccurentPeriodType)periodType
+                  periodType:(GPSReccurentPeriodType)periodType
 {
     self = [super init];
     if (self) {
@@ -30,27 +24,27 @@
 - (NSString *)period
 {
     switch (self.periodType) {
-        case RFIReccurentPeriodTypeNone: return nil;
-        case RFIReccurentPeriodTypeByRequest: return @"byrequest";
+        case GPSReccurentPeriodTypeNone: return nil;
+        case GPSReccurentPeriodTypeByRequest: return @"byrequest";
     }
 }
 
 + (instancetype)firstWithUrl:(NSString *)url andComment:(NSString *)comment
 {
-    return [[RFIReccurentParams alloc] initWithType:RFIReccurentTypeFirst
+    return [[GPSReccurentParams alloc] initWithType:GPSReccurentTypeFirst
                                             comment:comment
                                                 url:url
                                             orderId:nil
-                                         periodType:RFIReccurentPeriodTypeByRequest];
+                                         periodType:GPSReccurentPeriodTypeByRequest];
 }
 
 + (instancetype)nextWithOrderId:(NSString *)orderId
 {
-    return [[RFIReccurentParams alloc] initWithType:RFIReccurentTypeNext
+    return [[GPSReccurentParams alloc] initWithType:GPSReccurentTypeNext
                                             comment:nil
                                                 url:nil
                                             orderId:orderId
-                                         periodType:RFIReccurentPeriodTypeNone];
+                                         periodType:GPSReccurentPeriodTypeNone];
 }
 
 @end
